@@ -7,12 +7,13 @@ do (exports = if typeof exports is 'undefined' then @ else exports) ->
       unless @ instanceof The
         return new The context
 
+      @context = context
       @tasks = []
       @index = -1
       @isRunning = false
 
     then: (actors...) ->
-      @tasks.push new Task actors
+      @tasks.push new Task actors, @context
       @resume()
       @
 
@@ -42,10 +43,10 @@ do (exports = if typeof exports is 'undefined' then @ else exports) ->
 
   class Task
 
-    constructor: (actors) ->
+    constructor: (actors, context) ->
       @actors = []
       for actor, i in actors
-        @actors[i] = if actor instanceof Actor then actor else new Actor actor
+        @actors[i] = if actor instanceof Actor then actor else new Actor actor, null, context
 
     run: (next) ->
       doneFlags = []
@@ -62,17 +63,17 @@ do (exports = if typeof exports is 'undefined' then @ else exports) ->
 
   class Actor
 
-    constructor: (runner, @canceller) ->
+    constructor: (runner, @canceller, context) ->
       if runner.length is 0
         @runner = (done) ->
           setTimeout ->
-            runner()
+            runner.call context
             done()
           , 0
       else
         @runner = (done) ->
           setTimeout ->
-            runner done
+            runner.call context, done
           , 0
 
     run: (next) ->
