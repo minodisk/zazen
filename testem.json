@@ -2,15 +2,17 @@
   "framework"    : "mocha+chai",
   "src_files"    : [
     "lib/*.js",
-    "test/test.js"
+    "test/*.coffee"
   ],
+  "before_tests": "coffee -cp test/test.coffee > test/browser_test.js & coffee -jcp test/require.coffee test/test.coffee > test/node_test.js",
   "serve_files"  : [
     "lib/*.js",
-    "test/test.js"
+    "test/browser_test.js"
   ],
+  "after_tests": "rm test/*.js",
   "launchers"    : {
     "Mocha": {
-      "command": "mocha test/nodetest.js -R tap",
+      "command": "mocha test/node_test.js -R tap",
       "protocol": "tap"
     }
   },
