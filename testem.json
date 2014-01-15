@@ -1,0 +1,23 @@
+{
+  "framework"    : "mocha+chai",
+  "src_files"    : [
+    "lib/*.js",
+    "test/test.js"
+  ],
+  "serve_files"  : [
+    "lib/*.js",
+    "test/test.js"
+  ],
+  "launchers"    : {
+    "Mocha": {
+      "command": "mocha test/nodetest.js -R tap",
+      "protocol": "tap"
+    }
+  },
+  "launch_in_dev": [
+    "Mocha",
+    "Chrome",
+    "Safari",
+    "Firefox"
+  ]
+}

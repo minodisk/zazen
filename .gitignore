@@ -1,0 +1,42 @@
+# OS: Mac
+.DS_Store
+
+# OS: Win
+Thumb.db
+
+# Environment: Node
+node_modules/
+
+# Builder: Bower
+bower_components/
+
+# IDE: IntelliJ
+*.iml
+.idea/
+
+# Compiler: SASS
+.sass-cache
+
+# Compiler: ActionScript
+.settings/
+
+# File: Sound
+*.aif
+*.mid
+*.midi
+*.mp3
+*.ra
+*.ram
+*.wav
+
+# File: Movie
+*.avi
+*.f4v
+*.flv
+*.m4v
+*.mov
+*.mp4
+*.mpeg
+*.mpg
+*.rm
+*.wmv

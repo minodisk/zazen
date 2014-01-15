@@ -1,0 +1,37 @@
+{
+  "name"           : "zazen",
+  "version"        : "0.0.0",
+  "description"    : "Async flow controller",
+  "main"           : "lib/zazen.js",
+  "directories"    : {
+    "test": "test"
+  },
+  "devDependencies": {
+    "grunt"               : "~0.4.2",
+    "grunt-contrib-watch" : "~0.5.3",
+    "grunt-contrib-concat": "~0.3.0",
+    "grunt-contrib-coffee": "~0.8.0",
+    "grunt-contrib-clean" : "~0.5.0",
+    "grunt-release"       : "~0.6.0"
+  },
+  "dependencies"   : {
+  },
+  "scripts"        : {
+    "test": "testem"
+  },
+  "repository"     : {
+    "type": "git",
+    "url" : "https://github.com/minodisk/zazen.git"
+  },
+  "keywords"       : [
+    "async",
+    "flow",
+    "control"
+  ],
+  "author"         : "Daisuke Mino",
+  "license"        : "MIT",
+  "bugs"           : {
+    "url": "https://github.com/minodisk/zazen/issues"
+  },
+  "homepage"       : "https://github.com/minodisk/zazen"
+}
