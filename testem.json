@@ -18,6 +18,8 @@
   },
   "launch_in_dev": [
     "Mocha",
-    "Chrome"
+    "Chrome",
+    "Firefox",
+    "Safari"
   ]
 }
