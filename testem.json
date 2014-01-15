@@ -2,9 +2,9 @@
   "framework"    : "mocha",
   "src_files"    : [
     "lib/*.js",
-    "test/*.coffee"
+    "test/src/*.coffee"
   ],
-  "before_tests": "coffee -cp test/test.coffee > test/browser_test.js & coffee -jcp test/require.coffee test/test.coffee > test/node_test.js",
+  "before_tests": "coffee -cp test/src/test.coffee > test/browser_test.js & coffee -jcp test/src/require.coffee test/src/test.coffee > test/node_test.js",
   "serve_files"  : [
     "lib/*.js",
     "node_modules/expect.js/expect.js",
