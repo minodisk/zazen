@@ -70,7 +70,10 @@ do (exports = if typeof exports is 'undefined' then @ else exports) ->
             done()
           , 0
       else
-        @runner = runner
+        @runner = (done) ->
+          setTimeout ->
+            runner done
+          , 0
 
     run: (next) ->
       @runner ->
