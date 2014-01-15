@@ -10,28 +10,36 @@
   };
 
   describe('The', function() {
-    describe('constructor', function() {
-      it('should construct the instance', function() {
+    describe('.then()', function() {
+      it('should be implemented', function() {
+        return expect(The.then).to.be.a('function');
+      });
+      return it('should construct The and add task with Then#then()', function() {
+        return expect(The.then()).to.be.a(The);
+      });
+    });
+    describe('#constructor()', function() {
+      it('should create The instance', function() {
         return expect(new The()).to.be.a(The);
       });
-      return it('should construct without new operator', function() {
+      return it('should create The instance without new operator', function() {
         return expect(The()).to.be.a(The);
       });
     });
-    describe('then', function() {
+    describe('#then()', function() {
       it('should be implemented', function() {
         expect(The.prototype.then).to.be.a('function');
         return expect(The().then).to.be.a('function');
       });
       it('should be chainable', function(done) {
-        return The().then(function() {}).then(function() {}).then(function() {
+        return The.then(function() {}).then(function() {}).then(function() {
           return done();
         });
       });
       it('should run serially', function(done) {
         var i;
         i = -1;
-        The().then(function() {
+        The.then(function() {
           return expect(++i).to.be.equal(1);
         }).then(function() {
           return expect(++i).to.be.equal(2);
@@ -44,7 +52,7 @@
       it('should run parallely', function(done) {
         var i;
         i = -1;
-        The().then(function() {
+        The.then(function() {
           return expect(++i).to.be.within(1, 3);
         }, function() {
           return expect(++i).to.be.within(1, 3);
@@ -60,7 +68,7 @@
         var i, time;
         i = -1;
         time = now();
-        The().then(function(done) {
+        The.then(function(done) {
           expect(i).to.be.equal(0, 'then0');
           return setTimeout(function() {
             expect(++i).to.be.equal(1, 'then0+');
@@ -91,7 +99,7 @@
         var i, time;
         i = -1;
         time = now();
-        The().then(function(done) {
+        The.then(function(done) {
           expect(i).to.be.equal(0);
           return setTimeout(function() {
             expect(++i).to.be.equal(3, 'then3');
@@ -134,7 +142,7 @@
           _fn(j);
         }
         actors = actors.reverse();
-        The().then(actors).then(function() {
+        The.then(actors).then(function() {
           expect(++i).to.be.equal(4, 'then4');
           expect(now() - time).to.be.within(300, 600);
           return done();
@@ -142,7 +150,7 @@
         return expect(++i).to.be.equal(0, 'outer');
       });
     });
-    return describe('context', function() {
+    return describe('#context', function() {
       it('should be maintained in runner', function(done) {
         var context;
         context = {

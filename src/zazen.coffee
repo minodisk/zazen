@@ -8,6 +8,9 @@ do (exports = if typeof exports is 'undefined' then @ else exports) ->
 
     @verbose: false
 
+    @then: ->
+      The::then.apply new The(), arguments
+
     constructor: (context) ->
       unless @ instanceof The
         return new The context

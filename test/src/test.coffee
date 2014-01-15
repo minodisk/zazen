@@ -1,20 +1,28 @@
-now = -> new Date().getTime()
+now = ->
+  new Date().getTime()
 
 describe 'The', ->
-  describe 'constructor', ->
-    it 'should construct the instance', ->
+  describe '.then()', ->
+    it 'should be implemented', ->
+      expect(The.then).to.be.a 'function'
+
+    it 'should construct The and add task with Then#then()', ->
+      expect(The.then()).to.be.a The
+
+  describe '#constructor()', ->
+    it 'should create The instance', ->
       expect(new The()).to.be.a The
 
-    it 'should construct without new operator', ->
+    it 'should create The instance without new operator', ->
       expect(The()).to.be.a The
 
-  describe 'then', ->
+  describe '#then()', ->
     it 'should be implemented', ->
       expect(The::then).to.be.a 'function'
       expect(The().then).to.be.a 'function'
 
     it 'should be chainable', (done) ->
-      The()
+      The
       .then(->)
       .then(->)
       .then ->
@@ -22,7 +30,7 @@ describe 'The', ->
 
     it 'should run serially', (done) ->
       i = -1
-      The()
+      The
       .then ->
           expect((++i)).to.be.equal 1
       .then ->
@@ -34,7 +42,7 @@ describe 'The', ->
 
     it 'should run parallely', (done) ->
       i = -1
-      The()
+      The
       .then ->
           expect((++i)).to.be.within 1, 3
         , ->
@@ -49,7 +57,7 @@ describe 'The', ->
     it 'should run serially with async runners', (done) ->
       i = -1
       time = now()
-      The()
+      The
       .then (done) ->
           expect(i).to.be.equal 0, 'then0'
           setTimeout ->
@@ -79,7 +87,7 @@ describe 'The', ->
     it 'should run parallely with async runners', (done) ->
       i = -1
       time = now()
-      The()
+      The
       .then (done) ->
           expect(i).to.be.equal 0
           setTimeout ->
@@ -117,7 +125,7 @@ describe 'The', ->
               done()
             , 100 * j
       actors = actors.reverse()
-      The()
+      The
       .then(actors)
       .then ->
           expect((++i)).to.be.equal 4, 'then4'
@@ -125,8 +133,7 @@ describe 'The', ->
           done()
       expect((++i)).to.be.equal 0, 'outer'
 
-  describe 'context', ->
-
+  describe '#context', ->
     it 'should be maintained in runner', (done) ->
       context =
         i: -1
