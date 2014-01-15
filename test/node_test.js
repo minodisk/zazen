@@ -18,6 +18,21 @@
         return expect(The.then()).to.be.a(The);
       });
     });
+    describe('.wait()', function() {
+      it('should be implemented', function() {
+        return expect(The.wait).to.be.a('function');
+      });
+      return it('should construct The and add task with Then#wait()', function() {
+        var i, time;
+        i = -1;
+        time = now();
+        The.wait(100).then(function() {
+          expect(++i).to.be.equal(1);
+          return expect(now() - time).to.be.above(100);
+        });
+        return expect(++i).to.be.equal(0);
+      });
+    });
     describe('#constructor()', function() {
       it('should create The instance', function() {
         return expect(new The()).to.be.a(The);
@@ -29,6 +44,7 @@
     describe('#then()', function() {
       it('should be implemented', function() {
         expect(The.prototype.then).to.be.a('function');
+        expect(new The().then).to.be.a('function');
         return expect(The().then).to.be.a('function');
       });
       it('should be chainable', function(done) {
@@ -76,21 +92,21 @@
           }, 100);
         }).then(function(done) {
           expect(i).to.be.equal(1, 'then1');
-          expect(now() - time).to.be.within(100, 200);
+          expect(now() - time).to.be.above(100);
           return setTimeout(function() {
             expect(++i).to.be.equal(2, 'then1+');
             return done();
           }, 100);
         }).then(function(done) {
           expect(i).to.be.equal(2, 'then2');
-          expect(now() - time).to.be.within(200, 400);
+          expect(now() - time).to.be.above(200);
           return setTimeout(function() {
             expect(++i).to.be.equal(3, 'then2+');
             return done();
           }, 100);
         }).then(function() {
           expect(++i).to.be.equal(4, 'then4');
-          expect(now() - time).to.be.within(300, 600);
+          expect(now() - time).to.be.above(300);
           return done();
         });
         return expect(++i).to.be.equal(0, 'outer');
@@ -119,7 +135,7 @@
           }, 200);
         }).then(function() {
           expect(++i).to.be.equal(4, 'then4');
-          expect(now() - time).to.be.within(300, 600);
+          expect(now() - time).to.be.above(300);
           return done();
         });
         return expect(++i).to.be.equal(0, 'outer');
@@ -144,10 +160,29 @@
         actors = actors.reverse();
         The.then(actors).then(function() {
           expect(++i).to.be.equal(4, 'then4');
-          expect(now() - time).to.be.within(300, 600);
+          expect(now() - time).to.be.above(300);
           return done();
         });
         return expect(++i).to.be.equal(0, 'outer');
+      });
+    });
+    describe('#wait()', function() {
+      it('should be implemented', function() {
+        expect(The.prototype.wait).to.be.a('function');
+        expect(new The().wait).to.be.a('function');
+        return expect(The().wait).to.be.a('function');
+      });
+      return it('should defer next task', function() {
+        var i, time;
+        i = -1;
+        time = now();
+        The.then(function() {
+          return expect(++i).to.be.equal(1);
+        }).wait(100).then(function() {
+          expect(++i).to.be.equal(2);
+          return expect(now() - time).to.be.above(100);
+        });
+        return expect(++i).to.be.equal(0);
       });
     });
     return describe('#context', function() {

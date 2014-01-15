@@ -11,6 +11,9 @@ do (exports = if typeof exports is 'undefined' then @ else exports) ->
     @then: ->
       The::then.apply new The(), arguments
 
+    @wait: ->
+      The::wait.apply new The(), arguments
+
     constructor: (context) ->
       unless @ instanceof The
         return new The context
@@ -26,6 +29,11 @@ do (exports = if typeof exports is 'undefined' then @ else exports) ->
       @tasks.push new Task actors, @context
       @resume()
       @
+
+    wait: (duration) ->
+      #TODO Remove [] operator; I write [] for the bug of IntelliJ IDEA (http://youtrack.jetbrains.com/issue/WEB-10349)
+      @['then'] (done) ->
+        setTimeout done, duration
 
     resume: ->
       return if @isRunning
