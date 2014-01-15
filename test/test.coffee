@@ -83,23 +83,44 @@ describe 'The', ->
       time = now()
       The()
       .then (done) ->
-          i.should.be.within 0, 2
+          i.should.be.equal 0
           setTimeout ->
             (++i).should.be.equal 3, 'then3'
             done()
           , 300
         , (done) ->
-          i.should.be.within 0, 2
+          i.should.be.equal 0
           setTimeout ->
             (++i).should.be.equal 1, 'then1'
             done()
           , 100
         , (done) ->
-          i.should.be.within 0, 2
+          i.should.be.equal 0
           setTimeout ->
             (++i).should.be.equal 2, 'then2'
             done()
           , 200
+      .then ->
+          (++i).should.be.equal 4, 'then4'
+          (now() - time).should.be.closeTo 300, 50
+          done()
+      (++i).should.be.equal 0, 'outer'
+
+    it 'should accept parallel actors as array', (done) ->
+      i = -1
+      time = now()
+      actors = []
+      for j in [1..3]
+        do (j) ->
+          actors.push (done) ->
+            i.should.be.equal 0
+            setTimeout ->
+              (++i).should.be.equal j
+              done()
+            , 100 * j
+      actors = actors.reverse()
+      The()
+      .then(actors)
       .then ->
           (++i).should.be.equal 4, 'then4'
           (now() - time).should.be.closeTo 300, 50

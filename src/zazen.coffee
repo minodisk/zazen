@@ -1,4 +1,9 @@
 do (exports = if typeof exports is 'undefined' then @ else exports) ->
+  toString = Object::toString
+  slice = Array::slice
+  isArray = Array.isArray or (obj) ->
+    toString.call(obj) is '[object Array]'
+
   class The
 
     @verbose: false
@@ -12,7 +17,9 @@ do (exports = if typeof exports is 'undefined' then @ else exports) ->
       @index = -1
       @isRunning = false
 
-    then: (actors...) ->
+    then: (actors) ->
+      unless isArray actors
+        actors = slice.call arguments, 0
       @tasks.push new Task actors, @context
       @resume()
       @
