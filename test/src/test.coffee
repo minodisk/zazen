@@ -176,14 +176,14 @@ describe 'The', ->
           expect(@i).to.be.equal 0
           setTimeout =>
             expect(@).to.be.equal context
-            expect((++@i)).to.be.equal 1
+            expect(++@i).to.be.equal 1
             done()
           , 100
       .then ->
           expect(@).to.be.equal context
-          expect((++@i)).to.be.equal 2
+          expect(++@i).to.be.equal 2
           done()
-      expect((++context.i)).to.be.equal 0
+      expect(++context.i).to.be.equal 0
 
     it 'should be a class instance', (done) ->
       class Foo
