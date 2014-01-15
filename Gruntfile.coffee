@@ -23,8 +23,26 @@ module.exports = (grunt) ->
           ext: '.js'
         ]
 
+    bump:
+      options:
+        files: [
+          'package.json'
+          'bower.json'
+        ]
+        commitFiles: [ '-a' ]
+
+    release:
+      options:
+        bump: false
+        add: false
+        commit: false
+        tag: false
+        push: false
+        pushTags: false
+
   grunt.loadNpmTasks 'grunt-contrib-watch'
   grunt.loadNpmTasks 'grunt-contrib-coffee'
+  grunt.loadNpmTasks 'grunt-bump'
   grunt.loadNpmTasks 'grunt-release'
 
   grunt.registerTask 'default', [
@@ -36,4 +54,8 @@ module.exports = (grunt) ->
   ]
   grunt.registerTask 'lib', [
     'coffee:lib'
+  ]
+  grunt.registerTask 'publish', [
+    'bump'
+    'release'
   ]

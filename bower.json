@@ -1,19 +1,19 @@
 {
-  "name"       : "zazen",
-  "version"    : "0.0.0",
-  "homepage"   : "https://github.com/minodisk/zazen",
-  "authors"    : [
-    "Daisuke Mino <daisuke.mino@gmail.com>"
-  ],
+  "name": "zazen",
+  "version": "0.0.1",
   "description": "Async flow controller",
-  "main"       : "lib/zazen.js",
-  "keywords"   : [
+  "keywords": [
     "async",
     "flow",
     "control"
   ],
-  "license"    : "MIT",
-  "ignore"     : [
+  "license": "MIT",
+  "authors": [
+    "Daisuke Mino <daisuke.mino@gmail.com>"
+  ],
+  "homepage": "https://github.com/minodisk/zazen",
+  "main": "lib/zazen.js",
+  "ignore": [
     "**/.*",
     "node_modules",
     "bower_components",
