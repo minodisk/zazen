@@ -200,19 +200,19 @@ describe 'The', ->
           done()
       expect(++i).to.be.equal 0, 'outer'
 
-#    it 'should accept The instance with returning `The` instance', (done) ->
-#      setTimeout ->
-#        i = -1
-#        time = now()
-#        The
-#        .then ->
-#          The.wait 2000
-#        .then ->
-#            expect(++i).to.be.equal 1, 'then1'
-#            expect(now() - time).to.be.above 100
-#            done()
-#        expect(++i).to.be.equal 0, 'outer'
-#      , 1000
+  #    it 'should accept The instance returned by runner', (done) ->
+  #      setTimeout ->
+  #        i = -1
+  #        time = now()
+  #        The
+  #        .then ->
+  #          The.wait 2000
+  #        .then ->
+  #            expect(++i).to.be.equal 1, 'then1'
+  #            expect(now() - time).to.be.above 100
+  #            done()
+  #        expect(++i).to.be.equal 0, 'outer'
+  #      , 1000
 
   describe '#wait()', ->
     it 'should be implemented', ->
@@ -231,3 +231,34 @@ describe 'The', ->
           expect(++i).to.be.equal 2
           expect(now() - time).to.be.above 100
       expect(++i).to.be.equal 0
+
+  describe '#pause()', ->
+    it 'should pause the flow', (done) ->
+      the = The
+      .then (done) ->
+          setTimeout done, 200
+      .then ->
+          expect().fail()
+      setTimeout ->
+        the.pause()
+      , 100
+      setTimeout ->
+        expect(the.index).to.be.equal 0
+        done()
+      , 300
+
+  describe '#stop()', ->
+    it 'should pause and reset the flow', (done) ->
+      the = The
+      .then (done) ->
+          setTimeout done, 200
+      .then ->
+          expect().fail()
+      setTimeout ->
+        the.stop()
+      , 100
+      setTimeout ->
+        expect(the.index).to.be.equal -1
+        done()
+      , 300
+

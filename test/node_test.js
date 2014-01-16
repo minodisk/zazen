@@ -231,7 +231,7 @@
         return expect(++i).to.be.equal(0, 'outer');
       });
     });
-    return describe('#wait()', function() {
+    describe('#wait()', function() {
       it('should be implemented', function() {
         expect(The.prototype.wait).to.be.a('function');
         expect(new The().wait).to.be.a('function');
@@ -248,6 +248,40 @@
           return expect(now() - time).to.be.above(100);
         });
         return expect(++i).to.be.equal(0);
+      });
+    });
+    describe('#pause()', function() {
+      return it('should pause the flow', function(done) {
+        var the;
+        the = The.then(function(done) {
+          return setTimeout(done, 200);
+        }).then(function() {
+          return expect().fail();
+        });
+        setTimeout(function() {
+          return the.pause();
+        }, 100);
+        return setTimeout(function() {
+          expect(the.index).to.be.equal(0);
+          return done();
+        }, 300);
+      });
+    });
+    return describe('#stop()', function() {
+      return it('should pause and reset the flow', function(done) {
+        var the;
+        the = The.then(function(done) {
+          return setTimeout(done, 200);
+        }).then(function() {
+          return expect().fail();
+        });
+        setTimeout(function() {
+          return the.stop();
+        }, 100);
+        return setTimeout(function() {
+          expect(the.index).to.be.equal(-1);
+          return done();
+        }, 300);
       });
     });
   });

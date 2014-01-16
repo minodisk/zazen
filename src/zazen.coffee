@@ -50,6 +50,7 @@ do (exports = if typeof exports is 'undefined' then @ else exports) ->
 
     next: =>
       if The.verbose then console.log 'The#next this =', @
+      return unless @isRunning
       index = @index + 1
       return if index < 0 or index >= @tasks.length
       @index = index
@@ -123,21 +124,31 @@ do (exports = if typeof exports is 'undefined' then @ else exports) ->
     class SyncActor extends Actor
 
       constructor: (runner, canceller, context) ->
+        timeoutId = null
         super (done) ->
-          setTimeout ->
+          timeoutId = setTimeout ->
             runner.call context
             done()
           , 0
-        , canceller, context
+        , ->
+          clearTimeout timeoutId
+          timeoutId = null
+          canceller?()
+        , context
 
     class AsyncActor extends Actor
 
       constructor: (runner, canceller, context) ->
+        timeoutId = null
         super (done) ->
-          setTimeout ->
+          timeoutId = setTimeout ->
             runner.call context, done
           , 0
-        , canceller, context
+        , ->
+          clearTimeout timeoutId
+          timeoutId = null
+          canceller?()
+        , context
 
     (runner, canceller, context) ->
       if runner instanceof Actor
@@ -151,6 +162,5 @@ do (exports = if typeof exports is 'undefined' then @ else exports) ->
           new AsyncActor runner, canceller, context
       else
         throw new TypeError "runner must be specified as `The` instance or `function`"
-
 
   exports.The = The
