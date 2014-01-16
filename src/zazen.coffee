@@ -9,6 +9,21 @@ do (exports = if typeof exports is 'undefined' then @ else exports) ->
   else
     (obj) ->
       toString.call(obj) is '[object Function]'
+  createId = do ->
+    seeds = []
+    for str in ['0-9', 'a-z', 'A-Z']
+      charCodes = str.split '-'
+      for char, i in charCodes
+        charCodes[i] = char.charCodeAt 0
+      for charCode in [charCodes[0]..charCodes[1]] by 1
+        seeds.push String.fromCharCode charCode
+    length = seeds.length
+    (len = 12) ->
+      hash = ''
+      while len-- > 0
+        hash += seeds[length * Math.random() >> 0]
+      hash
+
 
   class The
 
@@ -24,6 +39,7 @@ do (exports = if typeof exports is 'undefined' then @ else exports) ->
       unless @ instanceof The
         return new The context
 
+      @id = createId()
       @context = context
       @tasks = []
       @index = -1
@@ -49,31 +65,37 @@ do (exports = if typeof exports is 'undefined' then @ else exports) ->
       @
 
     next: =>
-      if The.verbose then console.log 'The#next this =', @
       return unless @isRunning
       index = @index + 1
       return if index < 0 or index >= @tasks.length
       @index = index
+
+      if The.verbose then console.log "#{@.toStateString()}#next()"
       task = @tasks[@index]
-      if The.verbose then console.log '  ', @index, task
       task.run @next
 
     pause: ->
       return unless @isRunning
       @isRunning = false
 
+      if The.verbose then console.log "#{@.toStateString()}#pause()"
       task = @tasks[@index]
       task.cancel()
       @
 
     stop: ->
+      if The.verbose then console.log "#{@.toStateString()}#stop()"
       @pause()
       @index = -1
       @
 
+    toStateString: ->
+      """The{ id: #{@id}, index: #{@index}, isRunning: #{@isRunning} }"""
+
   class Task
 
     constructor: (actors, context) ->
+      @id = createId()
       @actors = []
       for actor, i in actors
         @actors[i] = createActor actor, null, context
@@ -87,7 +109,6 @@ do (exports = if typeof exports is 'undefined' then @ else exports) ->
             doneFlags[i] = true
             isDone = true
             isDone and= doneFlag for doneFlag in doneFlags
-            if The.verbose then console.log 'Task#done isDone =', isDone
             if isDone
               next()
 
@@ -95,19 +116,26 @@ do (exports = if typeof exports is 'undefined' then @ else exports) ->
       for actor in @actors
         actor.cancel()
 
+    toStateString: ->
+      """Task{ id: #{@id} }"""
+
   createActor = do ->
     class Actor
 
       constructor: (@runner, @canceller, @context) ->
+        @id = createId()
 
       run: (next) ->
+        if The.verbose then console.log "#{@toStateString()}#run"
         @runner ->
-          if The.verbose then console.log 'Actor#done next =', next
           next()
 
       cancel: ->
         return unless @canceller?
         @canceller.call @context
+
+      toStateString: ->
+        """Actor{ id: #{@id} }"""
 
     class TheActor extends Actor
 
@@ -127,8 +155,11 @@ do (exports = if typeof exports is 'undefined' then @ else exports) ->
         timeoutId = null
         super (done) ->
           timeoutId = setTimeout ->
-            runner.call context
-            done()
+            returns = runner.call context
+            if returns instanceof The
+              new TheActor(returns).run done
+            else
+              done()
           , 0
         , ->
           clearTimeout timeoutId

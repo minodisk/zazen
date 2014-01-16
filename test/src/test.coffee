@@ -200,19 +200,24 @@ describe 'The', ->
           done()
       expect(++i).to.be.equal 0, 'outer'
 
-  #    it 'should accept The instance returned by runner', (done) ->
-  #      setTimeout ->
-  #        i = -1
-  #        time = now()
-  #        The
-  #        .then ->
-  #          The.wait 2000
-  #        .then ->
-  #            expect(++i).to.be.equal 1, 'then1'
-  #            expect(now() - time).to.be.above 100
-  #            done()
-  #        expect(++i).to.be.equal 0, 'outer'
-  #      , 1000
+    it 'should accept The instance returned by runner', (done) ->
+      The.verbose = true
+      i = -1
+      time = now()
+      The
+      .wait(100)
+      .then ->
+          expect(now() - time).to.be.above 100
+          The
+          .wait(100)
+          .then ->
+              expect(now() - time).to.be.above 200
+          .wait(100)
+      .then ->
+          expect(++i).to.be.equal 1, 'then1'
+          expect(now() - time).to.be.above 300
+          done()
+      expect(++i).to.be.equal 0, 'outer'
 
   describe '#wait()', ->
     it 'should be implemented', ->

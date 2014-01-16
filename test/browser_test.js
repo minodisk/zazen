@@ -216,13 +216,30 @@
         });
         return expect(++i).to.be.equal(0, 'outer');
       });
-      return it('should accept The instance', function(done) {
+      it('should accept The instance', function(done) {
         var i, time;
         i = -1;
         time = now();
         The.then(The.wait(100)).then(function() {
           expect(++i).to.be.equal(1, 'then1');
           expect(now() - time).to.be.above(100);
+          return done();
+        });
+        return expect(++i).to.be.equal(0, 'outer');
+      });
+      return it('should accept The instance returned by runner', function(done) {
+        var i, time;
+        The.verbose = true;
+        i = -1;
+        time = now();
+        The.wait(100).then(function() {
+          expect(now() - time).to.be.above(100);
+          return The.wait(100).then(function() {
+            return expect(now() - time).to.be.above(200);
+          }).wait(100);
+        }).then(function() {
+          expect(++i).to.be.equal(1, 'then1');
+          expect(now() - time).to.be.above(300);
           return done();
         });
         return expect(++i).to.be.equal(0, 'outer');
