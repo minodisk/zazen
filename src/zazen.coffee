@@ -3,6 +3,12 @@ do (exports = if typeof exports is 'undefined' then @ else exports) ->
   slice = Array::slice
   isArray = Array.isArray or (obj) ->
     toString.call(obj) is '[object Array]'
+  isFunction = if typeof (/./) isnt 'function'
+    (obj) ->
+      typeof obj is 'function'
+  else
+    (obj) ->
+      toString.call(obj) is '[object Function]'
 
   class The
 
@@ -59,12 +65,17 @@ do (exports = if typeof exports is 'undefined' then @ else exports) ->
       task.cancel()
       @
 
+    stop: ->
+      @pause()
+      @index = -1
+      @
+
   class Task
 
     constructor: (actors, context) ->
       @actors = []
       for actor, i in actors
-        @actors[i] = if actor instanceof Actor then actor else new Actor actor, null, context
+        @actors[i] = createActor actor, null, context
 
     run: (next) ->
       doneFlags = []
@@ -79,27 +90,57 @@ do (exports = if typeof exports is 'undefined' then @ else exports) ->
             if isDone
               next()
 
-  class Actor
+  createActor = do ->
+    class Actor
 
-    constructor: (runner, @canceller, context) ->
-      if runner.length is 0
-        @runner = (done) ->
+      constructor: (@runner, @canceller, @context) ->
+
+      run: (next) ->
+        @runner ->
+          if The.verbose then console.log 'Actor#done next =', next
+          next()
+
+      cancel: ->
+        return unless @canceller?
+        @canceller.call @context
+
+    class TheActor extends Actor
+
+      constructor: (the) ->
+        super the
+        the.stop()
+
+    class SyncActor extends Actor
+
+      constructor: (runner, canceller, context) ->
+        super (done) ->
           setTimeout ->
             runner.call context
             done()
           , 0
-      else
-        @runner = (done) ->
+        , canceller, context
+
+    class AsyncActor extends Actor
+
+      constructor: (runner, canceller, context) ->
+        super (done) ->
           setTimeout ->
             runner.call context, done
           , 0
+        , canceller, context
 
-    run: (next) ->
-      @runner ->
-        if The.verbose then console.log 'Actor#done next =', next
-        next()
+    (runner, canceller, context) ->
+      if runner instanceof Actor
+        runner
+      else if runner instanceof The
+        new TheActor runner, canceller, context
+      else if isFunction runner
+        if runner.length is 0
+          new SyncActor runner, canceller, context
+        else
+          new AsyncActor runner, canceller, context
+      else
+        throw new TypeError "runner must be specified as `The` instance or `function`"
 
-    cancel: ->
-      @canceller?()
 
   exports.The = The
