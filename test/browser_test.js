@@ -84,12 +84,167 @@
         });
       });
     });
-    return describe('#constructor()', function() {
+    describe('#constructor()', function() {
       it('should create The instance', function() {
         return expect(new The()).to.be.a(The);
       });
       return it('should create The instance without new operator', function() {
         return expect(The()).to.be.a(The);
+      });
+    });
+    describe('#then()', function() {
+      it('should be implemented', function() {
+        expect(The.prototype.then).to.be.a('function');
+        expect(new The().then).to.be.a('function');
+        return expect(The().then).to.be.a('function');
+      });
+      it('should be chainable', function(done) {
+        return The.then(function() {}).then(function() {}).then(function() {
+          return done();
+        });
+      });
+      it('should run serially', function(done) {
+        var i;
+        i = -1;
+        The.then(function() {
+          return expect(++i).to.be.equal(1);
+        }).then(function() {
+          return expect(++i).to.be.equal(2);
+        }).then(function() {
+          expect(++i).to.be.equal(3);
+          return done();
+        });
+        return expect(++i).to.be.equal(0, 'outer');
+      });
+      it('should run parallely', function(done) {
+        var i;
+        i = -1;
+        The.then(function() {
+          return expect(++i).to.be.within(1, 3);
+        }, function() {
+          return expect(++i).to.be.within(1, 3);
+        }, function() {
+          return expect(++i).to.be.within(1, 3);
+        }).then(function() {
+          expect(++i).to.be.equal(4, 'then4');
+          return done();
+        });
+        return expect(++i).to.be.equal(0, 'outer');
+      });
+      it('should run serially with async runners', function(done) {
+        var i, time;
+        i = -1;
+        time = now();
+        The.then(function(done) {
+          expect(i).to.be.equal(0, 'then0');
+          return setTimeout(function() {
+            expect(++i).to.be.equal(1, 'then0+');
+            return done();
+          }, 100);
+        }).then(function(done) {
+          expect(i).to.be.equal(1, 'then1');
+          expect(now() - time).to.be.above(100);
+          return setTimeout(function() {
+            expect(++i).to.be.equal(2, 'then1+');
+            return done();
+          }, 100);
+        }).then(function(done) {
+          expect(i).to.be.equal(2, 'then2');
+          expect(now() - time).to.be.above(200);
+          return setTimeout(function() {
+            expect(++i).to.be.equal(3, 'then2+');
+            return done();
+          }, 100);
+        }).then(function() {
+          expect(++i).to.be.equal(4, 'then4');
+          expect(now() - time).to.be.above(300);
+          return done();
+        });
+        return expect(++i).to.be.equal(0, 'outer');
+      });
+      it('should run parallely with async runners', function(done) {
+        var i, time;
+        i = -1;
+        time = now();
+        The.then(function(done) {
+          expect(i).to.be.equal(0);
+          return setTimeout(function() {
+            expect(++i).to.be.equal(3, 'then3');
+            return done();
+          }, 300);
+        }, function(done) {
+          expect(i).to.be.equal(0);
+          return setTimeout(function() {
+            expect(++i).to.be.equal(1, 'then1');
+            return done();
+          }, 100);
+        }, function(done) {
+          expect(i).to.be.equal(0);
+          return setTimeout(function() {
+            expect(++i).to.be.equal(2, 'then2');
+            return done();
+          }, 200);
+        }).then(function() {
+          expect(++i).to.be.equal(4, 'then4');
+          expect(now() - time).to.be.above(300);
+          return done();
+        });
+        return expect(++i).to.be.equal(0, 'outer');
+      });
+      it('should accept parallel actors as array', function(done) {
+        var actors, i, j, time, _fn, _i;
+        i = -1;
+        time = now();
+        actors = [];
+        _fn = function(j) {
+          return actors.push(function(done) {
+            expect(i).to.be.equal(0);
+            return setTimeout(function() {
+              expect(++i).to.be.equal(j);
+              return done();
+            }, 100 * j);
+          });
+        };
+        for (j = _i = 1; _i <= 3; j = ++_i) {
+          _fn(j);
+        }
+        actors = actors.reverse();
+        The.then(actors).then(function() {
+          expect(++i).to.be.equal(4, 'then4');
+          expect(now() - time).to.be.above(300);
+          return done();
+        });
+        return expect(++i).to.be.equal(0, 'outer');
+      });
+      return it('should accept The instance', function(done) {
+        var i, time;
+        i = -1;
+        time = now();
+        The.then(The.wait(100)).then(function() {
+          expect(++i).to.be.equal(1, 'then1');
+          expect(now() - time).to.be.above(100);
+          return done();
+        });
+        return expect(++i).to.be.equal(0, 'outer');
+      });
+    });
+    return describe('#wait()', function() {
+      it('should be implemented', function() {
+        expect(The.prototype.wait).to.be.a('function');
+        expect(new The().wait).to.be.a('function');
+        return expect(The().wait).to.be.a('function');
+      });
+      return it('should defer next task', function() {
+        var i, time;
+        i = -1;
+        time = now();
+        The.then(function() {
+          return expect(++i).to.be.equal(1);
+        }).wait(100).then(function() {
+          expect(++i).to.be.equal(2);
+          return expect(now() - time).to.be.above(100);
+        });
+        return expect(++i).to.be.equal(0);
       });
     });
   });

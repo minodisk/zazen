@@ -90,6 +90,10 @@ do (exports = if typeof exports is 'undefined' then @ else exports) ->
             if isDone
               next()
 
+    cancel: ->
+      for actor in @actors
+        actor.cancel()
+
   createActor = do ->
     class Actor
 
@@ -107,8 +111,14 @@ do (exports = if typeof exports is 'undefined' then @ else exports) ->
     class TheActor extends Actor
 
       constructor: (the) ->
-        super the
         the.stop()
+        super the
+
+      run: (next) ->
+        @runner.then next
+
+      cancel: ->
+        @runner.pause()
 
     class SyncActor extends Actor
 
