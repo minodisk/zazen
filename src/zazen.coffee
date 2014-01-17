@@ -23,6 +23,8 @@ do (exports = if typeof exports is 'undefined' then @ else exports) ->
       while len-- > 0
         hash += seeds[length * Math.random() >> 0]
       hash
+  defer = (callback) ->
+    setTimeout callback, 0
 
 
   class The
@@ -61,36 +63,36 @@ do (exports = if typeof exports is 'undefined' then @ else exports) ->
       return if @isRunning
       @isRunning = true
 
-      @next()
+      @_next()
       @
-
-    next: =>
-      return unless @isRunning
-      index = @index + 1
-      return if index < 0 or index >= @tasks.length
-      @index = index
-
-      if The.verbose then console.log "#{@.toStateString()}#next()"
-      task = @tasks[@index]
-      task.run @next
 
     pause: ->
       return unless @isRunning
       @isRunning = false
 
-      if The.verbose then console.log "#{@.toStateString()}#pause()"
+      if The.verbose then console.log "#{@toStateString()}#pause()"
       task = @tasks[@index]
       task.cancel()
       @
 
     stop: ->
-      if The.verbose then console.log "#{@.toStateString()}#stop()"
+      if The.verbose then console.log "#{@toStateString()}#stop()"
       @pause()
       @index = -1
       @
 
     toStateString: ->
       """The{ id: #{@id}, index: #{@index}, isRunning: #{@isRunning} }"""
+
+    _next: =>
+      return unless @isRunning
+      index = @index + 1
+      return if index < 0 or index >= @tasks.length
+      @index = index
+
+      if The.verbose then console.log "#{@toStateString()}#_next()"
+      task = @tasks[@index]
+      task.run @_next
 
   class Task
 
@@ -100,7 +102,7 @@ do (exports = if typeof exports is 'undefined' then @ else exports) ->
       for actor, i in actors
         @actors[i] = createActor actor, null, context
 
-    run: (next) ->
+    run: (done) ->
       doneFlags = []
       for actor, i in @actors
         doneFlags[i] = false
@@ -110,7 +112,7 @@ do (exports = if typeof exports is 'undefined' then @ else exports) ->
             isDone = true
             isDone and= doneFlag for doneFlag in doneFlags
             if isDone
-              next()
+              done()
 
     cancel: ->
       for actor in @actors
@@ -122,64 +124,65 @@ do (exports = if typeof exports is 'undefined' then @ else exports) ->
   createActor = do ->
     class Actor
 
+      name: 'Actor'
+
       constructor: (@runner, @canceller, @context) ->
         @id = createId()
 
-      run: (next) ->
+      run: (done) ->
         if The.verbose then console.log "#{@toStateString()}#run"
         @runner ->
-          next()
+          done()
 
       cancel: ->
-        return unless @canceller?
-        @canceller.call @context
+        if @timeoutId?
+          clearTimeout @timeoutId
+          @timeoutId = null
+        if isFunction @canceller
+          @canceller.call @context
 
       toStateString: ->
-        """Actor{ id: #{@id} }"""
-
-    class TheActor extends Actor
-
-      constructor: (the) ->
-        the.stop()
-        super the
-
-      run: (next) ->
-        @runner.then next
-
-      cancel: ->
-        @runner.pause()
+        """#{@name}{ id: #{@id} }"""
 
     class SyncActor extends Actor
 
+      name: 'SyncActor'
+
       constructor: (runner, canceller, context) ->
-        timeoutId = null
-        super (done) ->
-          timeoutId = setTimeout ->
+        super (done) =>
+          @timeoutId = defer ->
             returns = runner.call context
             if returns instanceof The
               new TheActor(returns).run done
             else
               done()
-          , 0
-        , ->
-          clearTimeout timeoutId
-          timeoutId = null
-          canceller?()
+        , null
         , context
 
     class AsyncActor extends Actor
 
+      name: 'AsyncActor'
+
       constructor: (runner, canceller, context) ->
-        timeoutId = null
-        super (done) ->
-          timeoutId = setTimeout ->
-            runner.call context, done
-          , 0
-        , ->
-          clearTimeout timeoutId
-          timeoutId = null
-          canceller?()
+        super (done) =>
+          @timeoutId = defer =>
+            @canceller = runner.call context, done
+        , null
         , context
+
+    class TheActor extends Actor
+
+      name: 'TheActor'
+
+      constructor: (the) ->
+        the.stop()
+        super the
+
+      run: (done) ->
+        @runner.then done
+
+      cancel: ->
+        @runner.pause()
 
     (runner, canceller, context) ->
       if runner instanceof Actor
