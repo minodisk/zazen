@@ -30,7 +30,7 @@ module.exports = (grunt) ->
           'bower.json'
         ]
         commitFiles: [ '-a' ]
-        pushTo: 'master'
+        pushTo: 'origin/master'
 
     release:
       options:
