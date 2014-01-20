@@ -70,9 +70,12 @@ do (exports = if typeof exports is 'undefined' then @ else exports) ->
       return unless @isRunning
       @isRunning = false
 
-      if The.verbose then console.log "#{@toStateString()}#pause()"
       task = @tasks[@index]
       task.cancel()
+      @index--
+      if @index < -1
+        @index = -1
+      if The.verbose then console.log "#{@toStateString()}#pause()"
       @
 
     stop: ->

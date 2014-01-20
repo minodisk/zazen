@@ -250,16 +250,16 @@ describe 'zazen tests', ->
         .then ->
             expect().fail()
         setTimeout ->
+          expect(the.index).to.be.equal 0
           the.pause()
+          expect(the.index).to.be.equal -1
         , 100
         setTimeout ->
-          expect(the.index).to.be.equal 0
+          expect(the.index).to.be.equal -1
           done()
         , 300
 
       it 'should call canceller', (done) ->
-        The.verbose = true
-        time = now()
         the = The
         .then (done) ->
             timeoutId = setTimeout ->
@@ -295,36 +295,40 @@ describe 'zazen tests', ->
           done()
         , 300
 
-#    describe '#resume()', ->
-#      it 'should be implemented', ->
-#        expect(The::resume).to.be.a 'function'
-#        expect(new The().resume).to.be.a 'function'
-#        expect(The().resume).to.be.a 'function'
+    describe '#resume()', ->
+      it 'should be implemented', ->
+        expect(The::resume).to.be.a 'function'
+        expect(new The().resume).to.be.a 'function'
+        expect(The().resume).to.be.a 'function'
 
-#      it 'should resume paused flow', (done) ->
-#        The.verbose = true
-#        time = now()
-#        the = The
-#        .then (done) ->
-#            expect(the.index).to.be.equal 0
-#            console.log 'start'
-#            timeoutId = setTimeout ->
-#              console.log 'callback'
-#              expect(the.index).to.be.equal 0
-#              done()
-#            , 200
-#            ->
-#              clearTimeout timeoutId
-#        .then ->
-#            console.log 'complete', now() - time
-#            expect(the.index).to.be.equal 1
-#            expect(now() - time).to.be.above 500
-#            done()
-#        setTimeout ->
-#          the.pause()
-#        , 100
-#        setTimeout ->
-#          console.log 'resume'
-#          expect(the.index).to.be.equal 0
-#          the.resume()
-#        , 300
+      it 'should resume paused flow', (done) ->
+        i = -1
+        The.verbose = true
+        time = now()
+        the = The
+        .then (done) ->
+            expect(++i).to.be.equal 1
+            expect(the.index).to.be.equal 0
+            timeoutId = setTimeout ->
+              expect(the.index).to.be.equal 0
+              done()
+            , 200
+            ->
+              expect(--i).to.be.equal 0
+              clearTimeout timeoutId
+        .then ->
+            expect(++i).to.be.equal 2
+            expect(the.index).to.be.equal 1
+            expect(now() - time).to.be.above 500
+            done()
+        setTimeout ->
+          expect(i).to.be.equal 1
+          the.pause()
+          expect(i).to.be.equal 0
+        , 100
+        setTimeout ->
+          expect(i).to.be.equal 0
+          expect(the.index).to.be.equal -1
+          the.resume()
+        , 300
+        expect(++i).to.be.equal 0

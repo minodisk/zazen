@@ -281,17 +281,17 @@
             return expect().fail();
           });
           setTimeout(function() {
-            return the.pause();
+            expect(the.index).to.be.equal(0);
+            the.pause();
+            return expect(the.index).to.be.equal(-1);
           }, 100);
           return setTimeout(function() {
-            expect(the.index).to.be.equal(0);
+            expect(the.index).to.be.equal(-1);
             return done();
           }, 300);
         });
         return it('should call canceller', function(done) {
-          var the, time;
-          The.verbose = true;
-          time = now();
+          var the;
           the = The.then(function(done) {
             var timeoutId;
             timeoutId = setTimeout(function() {
@@ -310,7 +310,7 @@
           }, 300);
         });
       });
-      return describe('#stop()', function() {
+      describe('#stop()', function() {
         it('should be implemented', function() {
           expect(The.prototype.stop).to.be.a('function');
           expect(new The().stop).to.be.a('function');
@@ -330,6 +330,48 @@
             expect(the.index).to.be.equal(-1);
             return done();
           }, 300);
+        });
+      });
+      return describe('#resume()', function() {
+        it('should be implemented', function() {
+          expect(The.prototype.resume).to.be.a('function');
+          expect(new The().resume).to.be.a('function');
+          return expect(The().resume).to.be.a('function');
+        });
+        return it('should resume paused flow', function(done) {
+          var i, the, time;
+          i = -1;
+          The.verbose = true;
+          time = now();
+          the = The.then(function(done) {
+            var timeoutId;
+            expect(++i).to.be.equal(1);
+            expect(the.index).to.be.equal(0);
+            timeoutId = setTimeout(function() {
+              expect(the.index).to.be.equal(0);
+              return done();
+            }, 200);
+            return function() {
+              expect(--i).to.be.equal(0);
+              return clearTimeout(timeoutId);
+            };
+          }).then(function() {
+            expect(++i).to.be.equal(2);
+            expect(the.index).to.be.equal(1);
+            expect(now() - time).to.be.above(500);
+            return done();
+          });
+          setTimeout(function() {
+            expect(i).to.be.equal(1);
+            the.pause();
+            return expect(i).to.be.equal(0);
+          }, 100);
+          setTimeout(function() {
+            expect(i).to.be.equal(0);
+            expect(the.index).to.be.equal(-1);
+            return the.resume();
+          }, 300);
+          return expect(++i).to.be.equal(0);
         });
       });
     });
