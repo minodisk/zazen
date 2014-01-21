@@ -456,7 +456,7 @@
           }, 300);
         });
       });
-      return describe('#resume()', function() {
+      describe('#resume()', function() {
         it("should be implemented", function() {
           expect(The.prototype.resume).to.be.a('function');
           expect(new The().resume).to.be.a('function');
@@ -495,6 +495,29 @@
             return the.resume();
           }, 300);
           return expect(++i).to.be.equal(0);
+        });
+      });
+      return describe('#fail()', function() {
+        it("should catch error", function(done) {
+          return expect(function() {
+            return The.then(function(done) {
+              throw new Error('a');
+              return setTimeout(function() {
+                throw new Error('b');
+                return done();
+              }, 100);
+            }).fail(done);
+          }).to.not.throwException();
+        });
+        return it('should run when catch thrown object in the flow', function(done) {
+          var obj;
+          obj = {};
+          return The.then(function() {
+            throw obj;
+          }).fail(function(err) {
+            expect(err).to.be.equal(obj);
+            return done();
+          });
         });
       });
     });

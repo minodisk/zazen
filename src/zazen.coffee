@@ -202,7 +202,10 @@ do (exports = if typeof exports is 'undefined' then @ else exports) ->
       constructor: (runner, context) ->
         super (prevArgsList, done) =>
           @timeoutId = defer ->
-            returns = runner.call context, prevArgsList
+            try
+              returns = runner.call context, prevArgsList
+            catch err
+              console.log err
             if returns instanceof The
               new TheActor(returns).run prevArgsList, (args) ->
                 done.apply null, args
@@ -218,11 +221,17 @@ do (exports = if typeof exports is 'undefined' then @ else exports) ->
         super if doneIndex is 0
           (prevArgsList, done) =>
             @timeoutId = defer =>
-              @canceller = runner.call context, done
+              try
+                @canceller = runner.call context, done
+              catch err
+                console.log err
         else
           (prevArgsList, done) =>
             @timeoutId = defer =>
-              @canceller = runner.call context, prevArgsList, done
+              try
+                @canceller = runner.call context, prevArgsList, done
+              catch err
+                console.log err
         , context
 
     class TheActor extends Actor

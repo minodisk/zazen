@@ -296,18 +296,18 @@ describe 'zazen tests', ->
             expect(res2[0]).to.be.equal 'q'
             expect(res2[1]).to.be.equal 'r'
             The
-            .then([(
-                The.then (done) ->
-                  done 's', 't'
-              ), (
-                The.then (done) ->
-                  setTimeout ->
-                    done 'u', 'v'
-                  , 10
-              ), (
-                The.then (done) ->
-                  done 'x', 'y'
-              )])
+            .then([ (
+                      The.then (done) ->
+                        done 's', 't'
+                    ), (
+                      The.then (done) ->
+                        setTimeout ->
+                          done 'u', 'v'
+                        , 10
+                    ), (
+                      The.then (done) ->
+                        done 'x', 'y'
+                    ) ])
         .then ([ res0, res1, res2 ]) ->
             expect(res0[0]).to.be.equal 's'
             expect(res0[1]).to.be.equal 't'
@@ -453,3 +453,26 @@ describe 'zazen tests', ->
           the.resume()
         , 300
         expect(++i).to.be.equal 0
+
+    describe '#fail()', ->
+      it "should catch error", (done) ->
+        expect(->
+          The
+          .then (done) ->
+              throw new Error 'a'
+              setTimeout ->
+                # can't catch async error
+                throw new Error 'b'
+                done()
+              , 100
+          .fail done
+        ).to.not.throwException()
+
+      it 'should run when catch thrown object in the flow', (done) ->
+        obj = {}
+        The
+        .then ->
+            throw obj
+        .fail (err) ->
+            expect(err).to.be.equal obj
+            done()
