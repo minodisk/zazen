@@ -25,6 +25,17 @@ do (exports = if typeof exports is 'undefined' then @ else exports) ->
       hash
   defer = (callback) ->
     setTimeout callback, 0
+  getArgumentNames = do ->
+    rArgument = ///\(([\s\S]*?)\)///
+    rComment = /////.*$|/\*[\s\S]*?\*/|\s///gm
+    (func) ->
+      paramStr = func
+      .toString()
+      .match(rArgument)[1]
+      .replace(rComment, '')
+      if paramStr is ''
+        return []
+      paramStr.split ','
 
 
   class The
@@ -193,7 +204,9 @@ do (exports = if typeof exports is 'undefined' then @ else exports) ->
       else if runner instanceof The
         new TheActor runner, canceller, context
       else if isFunction runner
-        if runner.length is 0
+#        if runner.length is 0
+        args = getArgumentNames runner
+        if args.length is 0 or args[args.length - 1] isnt 'done'
           new SyncActor runner, canceller, context
         else
           new AsyncActor runner, canceller, context

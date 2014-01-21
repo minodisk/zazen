@@ -219,6 +219,19 @@ describe 'zazen tests', ->
             done()
         expect(++i).to.be.equal 0, 'outer'
 
+      it 'should pass parameters to next runner', (done) ->
+        The
+        .then (done) ->
+            done 1
+        .then (done) ->
+            expect(a).to.be.equal 1
+            setTimeout ->
+              done 'b'
+            , 100
+        .then (b) ->
+            expect(b).to.be.equal 'b'
+            done()
+
     describe '#wait()', ->
       it 'should be implemented', ->
         expect(The::wait).to.be.a 'function'

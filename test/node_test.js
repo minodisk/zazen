@@ -231,7 +231,7 @@
           });
           return expect(++i).to.be.equal(0, 'outer');
         });
-        return it('should accept The instance returned by runner', function(done) {
+        it('should accept The instance returned by runner', function(done) {
           var i, time;
           i = -1;
           time = now();
@@ -246,6 +246,19 @@
             return done();
           });
           return expect(++i).to.be.equal(0, 'outer');
+        });
+        return it('should pass parameters to next runner', function(done) {
+          return The.then(function(done) {
+            return done(1);
+          }).then(function(done) {
+            expect(a).to.be.equal(1);
+            return setTimeout(function() {
+              return done('b');
+            }, 100);
+          }).then(function(b) {
+            expect(b).to.be.equal('b');
+            return done();
+          });
         });
       });
       describe('#wait()', function() {
