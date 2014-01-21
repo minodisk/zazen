@@ -7,14 +7,14 @@ describe 'zazen tests', ->
       it "should be implemented", ->
         expect(The.then).to.be.a 'function'
 
-      it "should be a shorthand as `new The().then()`", ->
+      it "should be a shorthand for `new The().then()`", ->
         expect(The.then(->)).to.be.a The
 
     describe '.wait()', ->
       it "should be implemented", ->
         expect(The.wait).to.be.a 'function'
 
-      it "should be a shorthand as `new The().wait()`", ->
+      it "should be a shorthand for `new The().wait()`", ->
         i = -1
         time = now()
         The
@@ -66,10 +66,10 @@ describe 'zazen tests', ->
           done()
 
     describe '#constructor()', ->
-      it "should create The instance", ->
+      it "should create `The` instance", ->
         expect(new The()).to.be.a The
 
-      it "should create The instance without new operator", ->
+      it "should create `The` instance without new operator", ->
         expect(The()).to.be.a The
 
     describe '#then()', ->
@@ -78,7 +78,10 @@ describe 'zazen tests', ->
         expect(new The().then).to.be.a 'function'
         expect(The().then).to.be.a 'function'
 
-      it "should allow one parameter", ->
+      it "should require one parameter", ->
+        expect(->
+          The.then()
+        ).to.throwException()
         expect(->
           The.then (->), (->)
         ).to.throwException()
@@ -199,7 +202,7 @@ describe 'zazen tests', ->
             done()
         expect(++i).to.be.equal 0, 'outer'
 
-      it "should run nested flow when arguent is `The` instance", (done) ->
+      it "should run nested flow when argument is `The` instance", (done) ->
         i = -1
         time = now()
         The

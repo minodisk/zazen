@@ -12,7 +12,7 @@
         it("should be implemented", function() {
           return expect(The.then).to.be.a('function');
         });
-        return it("should be a shorthand as `new The().then()`", function() {
+        return it("should be a shorthand for `new The().then()`", function() {
           return expect(The.then(function() {})).to.be.a(The);
         });
       });
@@ -20,7 +20,7 @@
         it("should be implemented", function() {
           return expect(The.wait).to.be.a('function');
         });
-        return it("should be a shorthand as `new The().wait()`", function() {
+        return it("should be a shorthand for `new The().wait()`", function() {
           var i, time;
           i = -1;
           time = now();
@@ -86,10 +86,10 @@
         });
       });
       describe('#constructor()', function() {
-        it("should create The instance", function() {
+        it("should create `The` instance", function() {
           return expect(new The()).to.be.a(The);
         });
-        return it("should create The instance without new operator", function() {
+        return it("should create `The` instance without new operator", function() {
           return expect(The()).to.be.a(The);
         });
       });
@@ -99,7 +99,10 @@
           expect(new The().then).to.be.a('function');
           return expect(The().then).to.be.a('function');
         });
-        it("should allow one parameter", function() {
+        it("should require one parameter", function() {
+          expect(function() {
+            return The.then();
+          }).to.throwException();
           return expect(function() {
             return The.then((function() {}), (function() {}));
           }).to.throwException();
@@ -226,7 +229,7 @@
           });
           return expect(++i).to.be.equal(0, 'outer');
         });
-        it("should run nested flow when arguent is `The` instance", function(done) {
+        it("should run nested flow when argument is `The` instance", function(done) {
           var i, time;
           i = -1;
           time = now();
