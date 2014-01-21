@@ -114,7 +114,7 @@ do (exports = if typeof exports is 'undefined' then @ else exports) ->
       @id = createId()
       @actors = []
       for actor, i in actors
-        @actors[i] = createActor actor, null, context
+        @actors[i] = createActor actor, context
 
     run: (done) ->
       doneFlags = []
@@ -162,7 +162,7 @@ do (exports = if typeof exports is 'undefined' then @ else exports) ->
 
       name: 'SyncActor'
 
-      constructor: (runner, canceller, context) ->
+      constructor: (runner, context) ->
         super (done) =>
           @timeoutId = defer ->
             returns = runner.call context
@@ -176,7 +176,7 @@ do (exports = if typeof exports is 'undefined' then @ else exports) ->
 
       name: 'AsyncActor'
 
-      constructor: (runner, canceller, context) ->
+      constructor: (runner, context) ->
         super (done) =>
           @timeoutId = defer =>
             @canceller = runner.call context, done
@@ -196,18 +196,18 @@ do (exports = if typeof exports is 'undefined' then @ else exports) ->
       cancel: ->
         @runner.pause()
 
-    (runner, canceller, context) ->
+    (runner, context) ->
       if runner instanceof Actor
         runner
       else if runner instanceof The
-        new TheActor runner, canceller, context
+        new TheActor runner, context
       else if isFunction runner
 #        if runner.length is 0
         args = getArgumentNames runner
         if args.length is 0 or args[args.length - 1] isnt 'done'
-          new SyncActor runner, canceller, context
+          new SyncActor runner, context
         else
-          new AsyncActor runner, canceller, context
+          new AsyncActor runner, context
       else
         throw new TypeError "runner must be specified as `The` instance or `function`"
 
