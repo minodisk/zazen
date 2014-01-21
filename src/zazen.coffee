@@ -140,7 +140,7 @@ do (exports = if typeof exports is 'undefined' then @ else exports) ->
 
       name: 'Actor'
 
-      constructor: (@runner, @canceller, @context) ->
+      constructor: (@runner, @context) ->
         @id = createId()
 
       run: (done) ->
@@ -170,7 +170,6 @@ do (exports = if typeof exports is 'undefined' then @ else exports) ->
               new TheActor(returns).run done
             else
               done()
-        , null
         , context
 
     class AsyncActor extends Actor
@@ -181,7 +180,6 @@ do (exports = if typeof exports is 'undefined' then @ else exports) ->
         super (done) =>
           @timeoutId = defer =>
             @canceller = runner.call context, done
-        , null
         , context
 
     class TheActor extends Actor
