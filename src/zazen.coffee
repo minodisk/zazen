@@ -38,7 +38,17 @@ do (exports = if typeof exports is 'undefined' then @ else exports) ->
       paramStr.split ','
 
 
-  class The
+  class Klass
+
+    name: 'Klass'
+
+    constructor: ->
+      @id = createId()
+
+    toStateString: ->
+      """#{@name}{ id: #{@id} }"""
+
+  class The extends Klass
 
     @verbose: false
 
@@ -52,16 +62,16 @@ do (exports = if typeof exports is 'undefined' then @ else exports) ->
       unless @ instanceof The
         return new The context
 
-      @id = createId()
+      super()
       @context = context
       @tasks = []
       @index = -1
       @isRunning = false
 
     then: (actors) ->
-      unless isArray actors
-        actors = slice.call arguments, 0
-      @tasks.push new Task actors, @context
+      if arguments.length isnt 1
+        throw new TypeError 'The#then() requires one parameter: instance of `The`, `Function` or `Array<Function>`'
+      @tasks.push createTask actors, @context
       @resume()
       @
 
@@ -98,7 +108,7 @@ do (exports = if typeof exports is 'undefined' then @ else exports) ->
     toStateString: ->
       """The{ id: #{@id}, index: #{@index}, isRunning: #{@isRunning} }"""
 
-    _next: =>
+    _next: (argsList = []) =>
       return unless @isRunning
       index = @index + 1
       return if index < 0 or index >= @tasks.length
@@ -106,47 +116,77 @@ do (exports = if typeof exports is 'undefined' then @ else exports) ->
 
       if The.verbose then console.log "#{@toStateString()}#_next()"
       task = @tasks[@index]
-      task.run @_next
+      task.run argsList, @_next
 
-  class Task
 
-    constructor: (actors, context) ->
-      @id = createId()
-      @actors = []
-      for actor, i in actors
-        @actors[i] = createActor actor, context
+  createTask = do ->
+    class Task extends Klass
 
-    run: (done) ->
-      doneFlags = []
-      for actor, i in @actors
-        doneFlags[i] = false
-        do (i) ->
-          actor.run ->
-            doneFlags[i] = true
-            isDone = true
-            isDone and= doneFlag for doneFlag in doneFlags
-            if isDone
-              done()
+      name: 'Task'
 
-    cancel: ->
-      for actor in @actors
-        actor.cancel()
+      constructor: (actors, context) ->
+        super()
 
-    toStateString: ->
-      """Task{ id: #{@id} }"""
+    class SingleTask extends Task
+
+      name: 'SingleTask'
+
+      constructor: (actor, context) ->
+        super()
+        @actor = createActor actor, context
+
+      run: (prevArgsList, done) ->
+        @actor.run prevArgsList, (args) ->
+          done args
+
+      cancel: ->
+        @actor.cancel()
+
+    class MultiTask extends Task
+
+      name: 'MultiTask'
+
+      constructor: (actors, context) ->
+        super()
+        @actors = []
+        for actor, i in actors
+          @actors[i] = createActor actor, context
+
+      run: (prevArgsList, done) ->
+        argsList = []
+        for actor, i in @actors
+          argsList[i] = null
+          do (i) ->
+            actor.run prevArgsList, (args) ->
+              argsList[i] = args
+              isDone = true
+              isDone and= args isnt null for args in argsList
+              if isDone
+                done argsList
+
+      cancel: ->
+        for actor in @actors
+          actor.cancel()
+
+    (actors, context) ->
+      if isArray actors
+        new MultiTask actors, context
+      else
+        new SingleTask actors, context
+
 
   createActor = do ->
-    class Actor
+    class Actor extends Klass
 
       name: 'Actor'
 
       constructor: (@runner, @context) ->
-        @id = createId()
+        super()
 
-      run: (done) ->
+      run: (prevArgsList, done) ->
         if The.verbose then console.log "#{@toStateString()}#run"
-        @runner ->
-          done()
+        @runner prevArgsList, (args...) ->
+          done args
 
       cancel: ->
         if @timeoutId?
@@ -155,19 +195,17 @@ do (exports = if typeof exports is 'undefined' then @ else exports) ->
         if isFunction @canceller
           @canceller.call @context
 
-      toStateString: ->
-        """#{@name}{ id: #{@id} }"""
-
     class SyncActor extends Actor
 
       name: 'SyncActor'
 
       constructor: (runner, context) ->
-        super (done) =>
+        super (prevArgsList, done) =>
           @timeoutId = defer ->
-            returns = runner.call context
+            returns = runner.call context, prevArgsList
             if returns instanceof The
-              new TheActor(returns).run done
+              new TheActor(returns).run prevArgsList, (args) ->
+                done.apply null, args
             else
               done()
         , context
@@ -176,10 +214,15 @@ do (exports = if typeof exports is 'undefined' then @ else exports) ->
 
       name: 'AsyncActor'
 
-      constructor: (runner, context) ->
-        super (done) =>
-          @timeoutId = defer =>
-            @canceller = runner.call context, done
+      constructor: (runner, context, doneIndex) ->
+        super if doneIndex is 0
+          (prevArgsList, done) =>
+            @timeoutId = defer =>
+              @canceller = runner.call context, done
+        else
+          (prevArgsList, done) =>
+            @timeoutId = defer =>
+              @canceller = runner.call context, prevArgsList, done
         , context
 
     class TheActor extends Actor
@@ -190,7 +233,7 @@ do (exports = if typeof exports is 'undefined' then @ else exports) ->
         the.stop()
         super the
 
-      run: (done) ->
+      run: (prevArgsList, done) ->
         @runner.then done
 
       cancel: ->
@@ -202,12 +245,11 @@ do (exports = if typeof exports is 'undefined' then @ else exports) ->
       else if runner instanceof The
         new TheActor runner, context
       else if isFunction runner
-#        if runner.length is 0
         args = getArgumentNames runner
         if args.length is 0 or args[args.length - 1] isnt 'done'
           new SyncActor runner, context
         else
-          new AsyncActor runner, context
+          new AsyncActor runner, context, args.length - 1
       else
         throw new TypeError "runner must be specified as `The` instance or `function`"
 
