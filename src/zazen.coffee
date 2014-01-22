@@ -69,7 +69,7 @@ do (exports = if typeof exports is 'undefined' then @ else exports) ->
         return new The context
 
       super()
-      @context = context
+      @context = context or @
       @tasks = []
       @index = -1
       @isRunning = false
