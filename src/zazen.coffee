@@ -26,8 +26,14 @@ do (exports = if typeof exports is 'undefined' then @ else exports) ->
   defer = (callback) ->
     setTimeout callback, 0
   getArgumentNames = do ->
-    rArgument = ///\(([\s\S]*?)\)///
-    rComment = /////.*$|/\*[\s\S]*?\*/|\s///gm
+    rArgument = ///
+\(([\s\S]*?)\)
+///
+    rComment = ///
+  //.*$
+| /\*[\s\S]*?\*/
+| \s
+///gm
     (func) ->
       paramStr = func
       .toString()
@@ -71,8 +77,12 @@ do (exports = if typeof exports is 'undefined' then @ else exports) ->
     then: (actors) ->
       if arguments.length isnt 1
         throw new TypeError 'The#then() requires one parameter: instance of `The`, `Function` or `Array<Function>`'
-      @tasks.push createTask actors, @context
+      @tasks.push createTask actors, @context, @_fail
       @resume()
+      @
+
+    fail: (actor) ->
+      @tasks.push new FailTask actor, @context, @_fail
       @
 
     wait: (duration) ->
@@ -84,7 +94,7 @@ do (exports = if typeof exports is 'undefined' then @ else exports) ->
       return if @isRunning
       @isRunning = true
 
-      @_next()
+      @_then()
       @
 
     pause: ->
@@ -108,32 +118,44 @@ do (exports = if typeof exports is 'undefined' then @ else exports) ->
     toStateString: ->
       """The{ id: #{@id}, index: #{@index}, isRunning: #{@isRunning} }"""
 
-    _next: (argsList = []) =>
+    _then: (argsList = []) =>
       return unless @isRunning
       index = @index + 1
       return if index < 0 or index >= @tasks.length
       @index = index
 
-      if The.verbose then console.log "#{@toStateString()}#_next()"
+      if The.verbose then console.log "#{@toStateString()}#_then()"
       task = @tasks[@index]
-      task.run argsList, @_next
+      task.run argsList, @_then
+
+    _fail: (actor, err) =>
+      index = @index
+      @pause()
+
+      if The.verbose then console.log "#{@toStateString()}#_fail()"
+      while ++index < @tasks.length
+        if (task = @tasks[index]) instanceof FailTask
+          @index = index
+          task.run err, @_then
+          return @
+      throw Error 'fail is not found'
+      @
 
 
-  createTask = do ->
+  { createTask, FailTask } = do ->
     class Task extends Klass
 
       name: 'Task'
 
-      constructor: (actors, context) ->
+      constructor: (@actor) ->
         super()
 
     class SingleTask extends Task
 
       name: 'SingleTask'
 
-      constructor: (actor, context) ->
-        super()
-        @actor = createActor actor, context
+      constructor: (actor, context, fail) ->
+        super createActor actor, context, fail
 
       run: (prevArgsList, done) ->
         @actor.run prevArgsList, (args) ->
@@ -146,11 +168,11 @@ do (exports = if typeof exports is 'undefined' then @ else exports) ->
 
       name: 'MultiTask'
 
-      constructor: (actors, context) ->
+      constructor: (actors, context, fail) ->
         super()
         @actors = []
         for actor, i in actors
-          @actors[i] = createActor actor, context
+          @actors[i] = createActor actor, context, fail
 
       run: (prevArgsList, done) ->
         argsList = []
@@ -168,11 +190,23 @@ do (exports = if typeof exports is 'undefined' then @ else exports) ->
         for actor in @actors
           actor.cancel()
 
-    (actors, context) ->
+    class FailTask extends SingleTask
+
+      name: 'FailTask'
+
+      constructor: (actor, context, fail) ->
+        super actor, context, fail
+
+      run: (err, done) ->
+        @actor.run err, (args) ->
+          done args
+
+    createTask: (actors, context, fail) ->
       if isArray actors
-        new MultiTask actors, context
+        new MultiTask actors, context, fail
       else
-        new SingleTask actors, context
+        new SingleTask actors, context, fail
+    FailTask: FailTask
 
 
   createActor = do ->
@@ -199,13 +233,13 @@ do (exports = if typeof exports is 'undefined' then @ else exports) ->
 
       name: 'SyncActor'
 
-      constructor: (runner, context) ->
+      constructor: (runner, context, fail) ->
         super (prevArgsList, done) =>
-          @timeoutId = defer ->
+          @timeoutId = defer =>
             try
               returns = runner.call context, prevArgsList
             catch err
-              console.log err
+              fail @, err
             if returns instanceof The
               new TheActor(returns).run prevArgsList, (args) ->
                 done.apply null, args
@@ -217,21 +251,21 @@ do (exports = if typeof exports is 'undefined' then @ else exports) ->
 
       name: 'AsyncActor'
 
-      constructor: (runner, context, doneIndex) ->
+      constructor: (runner, context, fail, doneIndex) ->
         super if doneIndex is 0
           (prevArgsList, done) =>
             @timeoutId = defer =>
               try
                 @canceller = runner.call context, done
               catch err
-                console.log err
+                fail @, err
         else
           (prevArgsList, done) =>
             @timeoutId = defer =>
               try
                 @canceller = runner.call context, prevArgsList, done
               catch err
-                console.log err
+                fail @, err
         , context
 
     class TheActor extends Actor
@@ -248,17 +282,17 @@ do (exports = if typeof exports is 'undefined' then @ else exports) ->
       cancel: ->
         @runner.pause()
 
-    (runner, context) ->
+    (runner, context, fail) ->
       if runner instanceof Actor
         runner
       else if runner instanceof The
-        new TheActor runner, context
+        new TheActor runner
       else if isFunction runner
         args = getArgumentNames runner
         if args.length is 0 or args[args.length - 1] isnt 'done'
-          new SyncActor runner, context
+          new SyncActor runner, context, fail
         else
-          new AsyncActor runner, context, args.length - 1
+          new AsyncActor runner, context, fail, args.length - 1
       else
         throw new TypeError "runner must be specified as `The` instance or `function`"
 

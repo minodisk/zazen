@@ -35,35 +35,47 @@
         });
       });
       describe('#context', function() {
-        it("should be the context in all runner", function(done) {
-          var context;
-          context = {
-            i: -1
-          };
-          The(context).then(function(done) {
-            var _this = this;
-            expect(this).to.be.equal(context);
-            expect(this.i).to.be.equal(0);
-            return setTimeout(function() {
-              expect(_this).to.be.equal(context);
-              expect(++_this.i).to.be.equal(1);
-              return done();
-            }, 100);
-          }).then(function() {
-            expect(this).to.be.equal(context);
-            expect(++this.i).to.be.equal(2);
+        it("should be a `The` instance in default", function(done) {
+          var the;
+          return the = The.then([
+            function() {
+              return expect(this).to.be.equal(the);
+            }, function() {
+              return expect(this).to.be.equal(the);
+            }
+          ]).then(function() {
+            expect(this).to.be.equal(the);
+            throw new Error('');
+          }).fail(function() {
+            expect(this).to.be.equal(the);
             return done();
           });
-          return expect(++context.i).to.be.equal(0);
         });
-        return it("should be available with a class instance", function(done) {
+        it("should act as context in all actors", function(done) {
+          var context;
+          context = {};
+          return The(context).then([
+            function() {
+              return expect(this).to.be.equal(context);
+            }, function() {
+              return expect(this).to.be.equal(context);
+            }
+          ]).then(function() {
+            expect(this).to.be.equal(context);
+            throw new Error('');
+          }).fail(function() {
+            expect(this).to.be.equal(context);
+            return done();
+          });
+        });
+        return it("should act as context when it is class instance", function(done) {
           var Foo, foo;
           Foo = (function() {
             function Foo() {
               this.x = 0;
             }
 
-            Foo.prototype.start = function(callback) {
+            Foo.prototype.start = function() {
               return The(this).then(function(done) {
                 var intervalId,
                   _this = this;
@@ -74,16 +86,18 @@
                     return done();
                   }
                 }, 33);
-              }).then(callback);
+              });
             };
 
             return Foo;
 
           })();
           foo = new Foo();
-          return foo.start(function() {
+          return foo.start().then(function() {
             expect(this).to.be.equal(foo);
-            expect(foo.x).to.be.equal(10);
+            return expect(foo.x).to.be.equal(10);
+          }).fail(function() {
+            expect(this).to.be.equal(foo);
             return done();
           });
         });
@@ -501,26 +515,111 @@
         });
       });
       return describe('#fail()', function() {
-        it("should catch error", function(done) {
+        it("should run when catch error thrown", function(done) {
           return expect(function() {
-            return The.then(function(done) {
-              throw new Error('a');
-              return setTimeout(function() {
-                throw new Error('b');
-                return done();
-              }, 100);
-            }).fail(done);
+            var error, i;
+            i = -1;
+            error = new Error('a');
+            return The.then(function() {
+              throw error;
+            }).fail(function(err) {
+              expect(++i).to.be.equal(0);
+              expect(err).to.be.equal(error);
+              return done();
+            });
           }).to.not.throwException();
         });
-        return it('should run when catch thrown object in the flow', function(done) {
-          var obj;
-          obj = {};
-          return The.then(function() {
-            throw obj;
-          }).fail(function(err) {
-            expect(err).to.be.equal(obj);
+        it('should run when catch object thrown', function(done) {
+          return expect(function() {
+            var i, obj;
+            i = -1;
+            obj = {};
+            return The.then(function() {
+              throw obj;
+              return expect().fail();
+            }).fail(function(err) {
+              expect(++i).to.be.equal(0);
+              expect(err).to.be.equal(obj);
+              return done();
+            });
+          }).to.not.throwException();
+        });
+        it("should run when catch error thrown in async actor", function(done) {
+          return expect(function() {
+            var i;
+            i = -1;
+            return The.then(function(done) {
+              return done('async1');
+            }).then(function(message, done) {
+              throw new Error(message);
+              return setTimeout(function() {
+                expect().fail();
+                return done();
+              }, 100);
+            }).fail(function(err) {
+              expect(++i).to.be.equal(0);
+              expect(err.message).to.be.equal('async1');
+              return done();
+            });
+          }).to.not.throwException();
+        });
+        it('should run when catch error in parallel actors', function(done) {
+          return expect(function() {
+            var i;
+            i = -1;
+            return The.then([
+              function() {
+                throw new Error('a');
+              }, function() {
+                throw new Error('b');
+              }
+            ]).fail(function(err) {
+              expect(++i).to.be.equal(0);
+              expect(err.message).to.be.equal('a');
+              return done();
+            });
+          }).to.not.throwException();
+        });
+        it('should run when catch error in async parallel actors', function(done) {
+          return expect(function() {
+            var i;
+            i = -1;
+            return The.then([
+              function(done) {
+                throw new Error('a');
+                return setTimeout(function() {
+                  expect().fail();
+                  return done();
+                }, 100);
+              }, function(done) {
+                throw new Error('b');
+                return setTimeout(function() {
+                  expect().fail();
+                  return done();
+                }, 100);
+              }
+            ]).fail(function(err) {
+              expect(++i).to.be.equal(0);
+              expect(err.message).to.be.equal('a');
+              return done();
+            });
+          }).to.not.throwException();
+        });
+        return it('should be able to recover the flow when done is called', function(done) {
+          The.verbose = true;
+          return expect(The.then(function() {
+            throw new Error('a');
+            return expect().fail();
+          }).fail(function(err, done) {
+            console.log(err, done);
+            if (err.message === 'a') {
+              return done();
+            } else {
+              return expect().fail();
+            }
+          }).then(function() {
             return done();
-          });
+          })).to.not.throwException();
         });
       });
     });

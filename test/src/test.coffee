@@ -25,30 +25,43 @@ describe 'zazen tests', ->
         expect(++i).to.be.equal 0
 
     describe '#context', ->
-      it "should be the context in all runner", (done) ->
-        context =
-          i: -1
+      it "should be a `The` instance in default", (done) ->
+        the = The
+        .then([
+            ->
+              expect(@).to.be.equal the
+          , ->
+              expect(@).to.be.equal the
+          ])
+        .then ->
+            expect(@).to.be.equal the
+            throw new Error ''
+        .fail ->
+            expect(@).to.be.equal the
+            done()
+
+      it "should act as context in all actors", (done) ->
+        context = {}
         The(context)
-        .then (done) ->
-            expect(@).to.be.equal context
-            expect(@i).to.be.equal 0
-            setTimeout =>
+        .then([
+            ->
               expect(@).to.be.equal context
-              expect(++@i).to.be.equal 1
-              done()
-            , 100
+          , ->
+              expect(@).to.be.equal context
+          ])
         .then ->
             expect(@).to.be.equal context
-            expect(++@i).to.be.equal 2
+            throw new Error ''
+        .fail ->
+            expect(@).to.be.equal context
             done()
-        expect(++context.i).to.be.equal 0
 
-      it "should be available with a class instance", (done) ->
+      it "should act as context when it is class instance", (done) ->
         class Foo
           constructor: ->
             @x = 0
 
-          start: (callback) ->
+          start: ->
             The(@)
             .then (done) ->
                 expect(@x).to.be.equal 0
@@ -57,13 +70,16 @@ describe 'zazen tests', ->
                     clearInterval intervalId
                     done()
                 , 33
-            .then callback
 
         foo = new Foo()
-        foo.start ->
-          expect(@).to.be.equal foo
-          expect(foo.x).to.be.equal 10
-          done()
+        foo
+        .start()
+        .then ->
+            expect(@).to.be.equal foo
+            expect(foo.x).to.be.equal 10
+        .fail ->
+            expect(@).to.be.equal foo
+            done()
 
     describe '#constructor()', ->
       it "should create `The` instance", ->
@@ -455,24 +471,104 @@ describe 'zazen tests', ->
         expect(++i).to.be.equal 0
 
     describe '#fail()', ->
-      it "should catch error", (done) ->
+      it "should run when catch error thrown", (done) ->
         expect(->
+          i = -1
+          error = new Error 'a'
           The
-          .then (done) ->
-              throw new Error 'a'
-              setTimeout ->
-                # can't catch async error
-                throw new Error 'b'
-                done()
-              , 100
-          .fail done
+          .then ->
+              throw error
+          .fail (err) ->
+              expect(++i).to.be.equal 0
+              expect(err).to.be.equal error
+              done()
         ).to.not.throwException()
 
-      it 'should run when catch thrown object in the flow', (done) ->
-        obj = {}
-        The
-        .then ->
-            throw obj
-        .fail (err) ->
-            expect(err).to.be.equal obj
-            done()
+      it 'should run when catch object thrown', (done) ->
+        expect(->
+          i = -1
+          obj = {}
+          The
+          .then ->
+              throw obj
+              expect().fail()
+          .fail (err) ->
+              expect(++i).to.be.equal 0
+              expect(err).to.be.equal obj
+              done()
+        ).to.not.throwException()
+
+      it "should run when catch error thrown in async actor", (done) ->
+        expect(->
+          i = -1
+          The
+          .then (done) ->
+              done 'async1'
+          .then (message, done) ->
+              throw new Error message
+              setTimeout ->
+                expect().fail()
+                done()
+              , 100
+          .fail (err) ->
+              expect(++i).to.be.equal 0
+              expect(err.message).to.be.equal 'async1'
+              done()
+        ).to.not.throwException()
+
+      it 'should run when catch error in parallel actors', (done) ->
+        expect(->
+          i = -1
+          The
+          .then([
+              ->
+                throw new Error 'a'
+            , ->
+                throw new Error 'b'
+            ])
+          .fail (err) ->
+              expect(++i).to.be.equal 0
+              expect(err.message).to.be.equal 'a'
+              done()
+        ).to.not.throwException()
+
+      it 'should run when catch error in async parallel actors', (done) ->
+        expect(->
+          i = -1
+          The
+          .then([
+              (done) ->
+                throw new Error 'a'
+                setTimeout ->
+                  expect().fail()
+                  done()
+                , 100
+            , (done) ->
+                throw new Error 'b'
+                setTimeout ->
+                  expect().fail()
+                  done()
+                , 100
+            ])
+          .fail (err) ->
+              expect(++i).to.be.equal 0
+              expect(err.message).to.be.equal 'a'
+              done()
+        ).to.not.throwException()
+
+      it 'should be able to recover the flow when done is called', (done) ->
+        The.verbose = true
+        expect(
+          The
+          .then ->
+              throw new Error 'a'
+              expect().fail()
+          .fail (err, done) ->
+              console.log err, done
+              if err.message is 'a'
+                done()
+              else
+                expect().fail()
+          .then ->
+              done()
+        ).to.not.throwException()
