@@ -516,110 +516,101 @@
       });
       return describe('#fail()', function() {
         it("should run when catch error thrown", function(done) {
-          return expect(function() {
-            var error, i;
-            i = -1;
-            error = new Error('a');
-            return The.then(function() {
-              throw error;
-            }).fail(function(err) {
-              expect(++i).to.be.equal(0);
-              expect(err).to.be.equal(error);
-              return done();
-            });
-          }).to.not.throwException();
+          var error, i;
+          i = -1;
+          error = new Error('a');
+          return The.then(function() {
+            throw error;
+          }).fail(function(err) {
+            expect(++i).to.be.equal(0);
+            expect(err).to.be.equal(error);
+            return done();
+          });
         });
         it('should run when catch object thrown', function(done) {
-          return expect(function() {
-            var i, obj;
-            i = -1;
-            obj = {};
-            return The.then(function() {
-              throw obj;
-              return expect().fail();
-            }).fail(function(err) {
-              expect(++i).to.be.equal(0);
-              expect(err).to.be.equal(obj);
-              return done();
-            });
-          }).to.not.throwException();
+          var i, obj;
+          i = -1;
+          obj = {};
+          return The.then(function() {
+            throw obj;
+            return expect().fail();
+          }).fail(function(err) {
+            expect(++i).to.be.equal(0);
+            expect(err).to.be.equal(obj);
+            return done();
+          });
         });
         it("should run when catch error thrown in async actor", function(done) {
-          return expect(function() {
-            var i;
-            i = -1;
-            return The.then(function(done) {
-              return done('async1');
-            }).then(function(message, done) {
-              throw new Error(message);
+          var i;
+          i = -1;
+          return The.then(function(done) {
+            return done('async1');
+          }).then(function(message, done) {
+            throw new Error(message);
+            return setTimeout(function() {
+              expect().fail();
+              return done();
+            }, 100);
+          }).fail(function(err) {
+            expect(++i).to.be.equal(0);
+            expect(err.message).to.be.equal('async1');
+            return done();
+          });
+        });
+        it('should run when catch error in parallel actors', function(done) {
+          var i;
+          i = -1;
+          return The.then([
+            function() {
+              throw new Error('a');
+            }, function() {
+              throw new Error('b');
+            }
+          ]).fail(function(err) {
+            expect(++i).to.be.equal(0);
+            expect(err.message).to.be.equal('a');
+            return done();
+          });
+        });
+        it('should run when catch error in async parallel actors', function(done) {
+          var i;
+          i = -1;
+          return The.then([
+            function(done) {
+              throw new Error('a');
               return setTimeout(function() {
                 expect().fail();
                 return done();
               }, 100);
-            }).fail(function(err) {
-              expect(++i).to.be.equal(0);
-              expect(err.message).to.be.equal('async1');
-              return done();
-            });
-          }).to.not.throwException();
-        });
-        it('should run when catch error in parallel actors', function(done) {
-          return expect(function() {
-            var i;
-            i = -1;
-            return The.then([
-              function() {
-                throw new Error('a');
-              }, function() {
-                throw new Error('b');
-              }
-            ]).fail(function(err) {
-              expect(++i).to.be.equal(0);
-              expect(err.message).to.be.equal('a');
-              return done();
-            });
-          }).to.not.throwException();
-        });
-        it('should run when catch error in async parallel actors', function(done) {
-          return expect(function() {
-            var i;
-            i = -1;
-            return The.then([
-              function(done) {
-                throw new Error('a');
-                return setTimeout(function() {
-                  expect().fail();
-                  return done();
-                }, 100);
-              }, function(done) {
-                throw new Error('b');
-                return setTimeout(function() {
-                  expect().fail();
-                  return done();
-                }, 100);
-              }
-            ]).fail(function(err) {
-              expect(++i).to.be.equal(0);
-              expect(err.message).to.be.equal('a');
-              return done();
-            });
-          }).to.not.throwException();
+            }, function(done) {
+              throw new Error('b');
+              return setTimeout(function() {
+                expect().fail();
+                return done();
+              }, 100);
+            }
+          ]).fail(function(err) {
+            expect(++i).to.be.equal(0);
+            expect(err.message).to.be.equal('a');
+            return done();
+          });
         });
         return it('should be able to recover the flow when done is called', function(done) {
-          The.verbose = true;
-          return expect(The.then(function() {
+          return The.then(function() {
             throw new Error('a');
             return expect().fail();
           }).fail(function(err, done) {
-            console.log(err, done);
             if (err.message === 'a') {
-              return done();
+              return done('b');
             } else {
               return expect().fail();
             }
-          }).then(function() {
+          }).then(function(_arg) {
+            var b;
+            b = _arg[0];
+            expect(b).to.be.equal('b');
             return done();
-          })).to.not.throwException();
+          });
         });
       });
     });

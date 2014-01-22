@@ -472,103 +472,90 @@ describe 'zazen tests', ->
 
     describe '#fail()', ->
       it "should run when catch error thrown", (done) ->
-        expect(->
-          i = -1
-          error = new Error 'a'
-          The
-          .then ->
-              throw error
-          .fail (err) ->
-              expect(++i).to.be.equal 0
-              expect(err).to.be.equal error
-              done()
-        ).to.not.throwException()
+        i = -1
+        error = new Error 'a'
+        The
+        .then ->
+            throw error
+        .fail (err) ->
+            expect(++i).to.be.equal 0
+            expect(err).to.be.equal error
+            done()
 
       it 'should run when catch object thrown', (done) ->
-        expect(->
-          i = -1
-          obj = {}
-          The
-          .then ->
-              throw obj
-              expect().fail()
-          .fail (err) ->
-              expect(++i).to.be.equal 0
-              expect(err).to.be.equal obj
-              done()
-        ).to.not.throwException()
+        i = -1
+        obj = {}
+        The
+        .then ->
+            throw obj
+            expect().fail()
+        .fail (err) ->
+            expect(++i).to.be.equal 0
+            expect(err).to.be.equal obj
+            done()
 
       it "should run when catch error thrown in async actor", (done) ->
-        expect(->
-          i = -1
-          The
-          .then (done) ->
-              done 'async1'
-          .then (message, done) ->
-              throw new Error message
+        i = -1
+        The
+        .then (done) ->
+            done 'async1'
+        .then (message, done) ->
+            throw new Error message
+            setTimeout ->
+              expect().fail()
+              done()
+            , 100
+        .fail (err) ->
+            expect(++i).to.be.equal 0
+            expect(err.message).to.be.equal 'async1'
+            done()
+
+      it 'should run when catch error in parallel actors', (done) ->
+        i = -1
+        The
+        .then([
+            ->
+              throw new Error 'a'
+          , ->
+              throw new Error 'b'
+          ])
+        .fail (err) ->
+            expect(++i).to.be.equal 0
+            expect(err.message).to.be.equal 'a'
+            done()
+
+      it 'should run when catch error in async parallel actors', (done) ->
+        i = -1
+        The
+        .then([
+            (done) ->
+              throw new Error 'a'
               setTimeout ->
                 expect().fail()
                 done()
               , 100
-          .fail (err) ->
-              expect(++i).to.be.equal 0
-              expect(err.message).to.be.equal 'async1'
-              done()
-        ).to.not.throwException()
-
-      it 'should run when catch error in parallel actors', (done) ->
-        expect(->
-          i = -1
-          The
-          .then([
-              ->
-                throw new Error 'a'
-            , ->
-                throw new Error 'b'
-            ])
-          .fail (err) ->
-              expect(++i).to.be.equal 0
-              expect(err.message).to.be.equal 'a'
-              done()
-        ).to.not.throwException()
-
-      it 'should run when catch error in async parallel actors', (done) ->
-        expect(->
-          i = -1
-          The
-          .then([
-              (done) ->
-                throw new Error 'a'
-                setTimeout ->
-                  expect().fail()
-                  done()
-                , 100
-            , (done) ->
-                throw new Error 'b'
-                setTimeout ->
-                  expect().fail()
-                  done()
-                , 100
-            ])
-          .fail (err) ->
-              expect(++i).to.be.equal 0
-              expect(err.message).to.be.equal 'a'
-              done()
-        ).to.not.throwException()
+          , (done) ->
+              throw new Error 'b'
+              setTimeout ->
+                expect().fail()
+                done()
+              , 100
+          ])
+        .fail (err) ->
+            expect(++i).to.be.equal 0
+            expect(err.message).to.be.equal 'a'
+            done()
 
       it 'should be able to recover the flow when done is called', (done) ->
-        The.verbose = true
-        expect(
-          The
-          .then ->
-              throw new Error 'a'
+        The
+        .then ->
+            throw new Error 'a'
+            expect().fail()
+        .fail (err, done) ->
+            if err.message is 'a'
+              done 'b'
+            else
               expect().fail()
-          .fail (err, done) ->
-              console.log err, done
-              if err.message is 'a'
-                done()
-              else
-                expect().fail()
-          .then ->
-              done()
-        ).to.not.throwException()
+        .then ([b]) ->
+            expect(b).to.be.equal 'b'
+            done()

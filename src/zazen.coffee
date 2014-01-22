@@ -17,7 +17,7 @@ do (exports = if typeof exports is 'undefined' then @ else exports) ->
       for charCode in [charCodes[0]..charCodes[1]] by 1
         seeds.push String.fromCharCode charCode
     length = seeds.length
-    (len = 12) ->
+    (len = 5) ->
       hash = ''
       while len-- > 0
         hash += seeds[length * Math.random() >> 0]
@@ -45,13 +45,15 @@ do (exports = if typeof exports is 'undefined' then @ else exports) ->
 
   class Klass
 
+    indent: 0
     name: 'Klass'
 
     constructor: ->
-      @id = createId()
+      @_indent = new Array(@indent + 1).join ' '
+      @_id = createId()
 
-    toStateString: ->
-      """#{@name}{ id: #{@id} }"""
+    toVerboseString: ->
+      """#{@_indent}#{@name}(#{@_id})"""
 
   class The extends Klass
 
@@ -62,6 +64,8 @@ do (exports = if typeof exports is 'undefined' then @ else exports) ->
 
     @wait: ->
       The::wait.apply new The(), arguments
+
+    name: 'The'
 
     constructor: (context) ->
       unless @ instanceof The
@@ -82,9 +86,11 @@ do (exports = if typeof exports is 'undefined' then @ else exports) ->
 
     fail: (actor) ->
       @tasks.push new FailTask actor, @context, @_fail
+      @resume()
       @
 
     wait: (duration) ->
+      if The.verbose then console.log "#{@toVerboseString()}#wait()"
       #TODO Remove [] operator; I write [] for the bug of IntelliJ IDEA (http://youtrack.jetbrains.com/issue/WEB-10349)
       @['then'] (done) ->
         setTimeout done, duration
@@ -93,6 +99,7 @@ do (exports = if typeof exports is 'undefined' then @ else exports) ->
       return if @isRunning
       @isRunning = true
 
+      if The.verbose then console.log "#{@toVerboseString()}#resume()"
       @_then()
       @
 
@@ -105,17 +112,17 @@ do (exports = if typeof exports is 'undefined' then @ else exports) ->
       @index--
       if @index < -1
         @index = -1
-      if The.verbose then console.log "#{@toStateString()}#pause()"
+      if The.verbose then console.log "#{@toVerboseString()}#pause()"
       @
 
     stop: ->
-      if The.verbose then console.log "#{@toStateString()}#stop()"
+      if The.verbose then console.log "#{@toVerboseString()}#stop()"
       @pause()
       @index = -1
       @
 
-    toStateString: ->
-      """The{ id: #{@id}, index: #{@index}, isRunning: #{@isRunning} }"""
+    toVerboseString: ->
+      """#{super()}{ index: #{@index}, isRunning: #{@isRunning} }"""
 
     _then: (argsList = []) =>
       return unless @isRunning
@@ -123,7 +130,7 @@ do (exports = if typeof exports is 'undefined' then @ else exports) ->
       return if index < 0 or index >= @tasks.length
       @index = index
 
-      if The.verbose then console.log "#{@toStateString()}#_then()"
+      if The.verbose then console.log "#{@toVerboseString()}#_then()"
       task = @tasks[@index]
       task.run argsList, @_then
 
@@ -131,23 +138,34 @@ do (exports = if typeof exports is 'undefined' then @ else exports) ->
       index = @index
       @pause()
 
-      if The.verbose then console.log "#{@toStateString()}#_fail()"
+      # Jump to nearest FailTask
       while ++index < @tasks.length
         if (task = @tasks[index]) instanceof FailTask
           @index = index
-          task.run err, @_then
+          if The.verbose then console.log "#{@toVerboseString()}#_fail()"
+          task.run err, (argsList) =>
+            @isRunning = true
+            @_then argsList
           return @
-      throw Error 'fail is not found'
-      @
+
+      # nor throws error
+      throw err
 
 
   { createTask, FailTask } = do ->
     class Task extends Klass
 
+      indent: 2
       name: 'Task'
 
       constructor: (@actor) ->
         super()
+
+      run: ->
+        if The.verbose then console.log "#{@toVerboseString()}#run"
+
+      cancel: ->
+        if The.verbose then console.log "#{@toVerboseString()}#cancel"
 
     class SingleTask extends Task
 
@@ -157,10 +175,12 @@ do (exports = if typeof exports is 'undefined' then @ else exports) ->
         super createActor actor, context, fail
 
       run: (prevArgsList, done) ->
+        super()
         @actor.run prevArgsList, (args) ->
           done args
 
       cancel: ->
+        super()
         @actor.cancel()
 
     class MultiTask extends Task
@@ -173,6 +193,7 @@ do (exports = if typeof exports is 'undefined' then @ else exports) ->
           @actor[i] = createActor actor, context, fail
 
       run: (prevArgsList, done) ->
+        super()
         argsList = []
         for actor, i in @actor
           argsList[i] = null
@@ -185,6 +206,7 @@ do (exports = if typeof exports is 'undefined' then @ else exports) ->
                 done argsList
 
       cancel: ->
+        super()
         for actor in @actor
           actor.cancel()
 
@@ -196,6 +218,7 @@ do (exports = if typeof exports is 'undefined' then @ else exports) ->
         super actor, context, fail
 
       run: (err, done) ->
+        if The.verbose then console.log "#{@toVerboseString()}#run"
         @actor.run err, (args) ->
           done args
 
@@ -210,17 +233,19 @@ do (exports = if typeof exports is 'undefined' then @ else exports) ->
   createActor = do ->
     class Actor extends Klass
 
+      indent: 4
       name: 'Actor'
 
       constructor: (@runner, @context) ->
         super()
 
       run: (prevArgsList, done) ->
-        if The.verbose then console.log "#{@toStateString()}#run"
+        if The.verbose then console.log "#{@toVerboseString()}#run"
         @runner prevArgsList, (args...) ->
           done args
 
       cancel: ->
+        if The.verbose then console.log "#{@toVerboseString()}#cancel"
         if @timeoutId?
           clearTimeout @timeoutId
           @timeoutId = null
@@ -249,7 +274,7 @@ do (exports = if typeof exports is 'undefined' then @ else exports) ->
 
       name: 'AsyncActor'
 
-      constructor: (runner, context, fail, doneIndex) ->
+      constructor: (runner, context, fail, @doneIndex) ->
         super if doneIndex is 0
           (prevArgsList, done) =>
             @timeoutId = defer =>
@@ -265,6 +290,9 @@ do (exports = if typeof exports is 'undefined' then @ else exports) ->
               catch err
                 fail @, err
         , context
+
+      toVerboseString: ->
+        "#{super()}{ doneIndex: #{@doneIndex} }"
 
     class TheActor extends Actor
 
