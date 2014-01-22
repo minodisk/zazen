@@ -12,17 +12,11 @@
   describe('zazen tests', function() {
     return describe('The', function() {
       describe('.then()', function() {
-        it("should be implemented", function() {
-          return expect(The.then).to.be.a('function');
-        });
         return it("should be a shorthand for `new The().then()`", function() {
           return expect(The.then(function() {})).to.be.a(The);
         });
       });
       describe('.wait()', function() {
-        it("should be implemented", function() {
-          return expect(The.wait).to.be.a('function');
-        });
         return it("should be a shorthand for `new The().wait()`", function() {
           var i, time;
           i = -1;
@@ -111,11 +105,6 @@
         });
       });
       describe('#then()', function() {
-        it("should be implemented", function() {
-          expect(The.prototype.then).to.be.a('function');
-          expect(new The().then).to.be.a('function');
-          return expect(The().then).to.be.a('function');
-        });
         it("should require one parameter", function() {
           expect(function() {
             return The.then();
@@ -390,11 +379,6 @@
         });
       });
       describe('#wait()', function() {
-        it("should be implemented", function() {
-          expect(The.prototype.wait).to.be.a('function');
-          expect(new The().wait).to.be.a('function');
-          return expect(The().wait).to.be.a('function');
-        });
         return it("should defer next task", function() {
           var i, time;
           i = -1;
@@ -409,11 +393,6 @@
         });
       });
       describe('#pause()', function() {
-        it("should be implemented", function() {
-          expect(The.prototype.pause).to.be.a('function');
-          expect(new The().pause).to.be.a('function');
-          return expect(The().pause).to.be.a('function');
-        });
         it("should pause the flow", function(done) {
           var the;
           the = The.then(function(done) {
@@ -452,11 +431,6 @@
         });
       });
       describe('#stop()', function() {
-        it("should be implemented", function() {
-          expect(The.prototype.stop).to.be.a('function');
-          expect(new The().stop).to.be.a('function');
-          return expect(The().stop).to.be.a('function');
-        });
         return it("should pause and reset the flow", function(done) {
           var the;
           the = The.then(function(done) {
@@ -474,11 +448,6 @@
         });
       });
       describe('#resume()', function() {
-        it("should be implemented", function() {
-          expect(The.prototype.resume).to.be.a('function');
-          expect(new The().resume).to.be.a('function');
-          return expect(The().resume).to.be.a('function');
-        });
         return it("should resume paused flow", function(done) {
           var i, the, time;
           i = -1;
