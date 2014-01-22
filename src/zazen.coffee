@@ -1,6 +1,5 @@
 do (exports = if typeof exports is 'undefined' then @ else exports) ->
   toString = Object::toString
-  slice = Array::slice
   isArray = Array.isArray or (obj) ->
     toString.call(obj) is '[object Array]'
   isFunction = if typeof (/./) isnt 'function'
@@ -169,14 +168,13 @@ do (exports = if typeof exports is 'undefined' then @ else exports) ->
       name: 'MultiTask'
 
       constructor: (actors, context, fail) ->
-        super()
-        @actors = []
+        super []
         for actor, i in actors
-          @actors[i] = createActor actor, context, fail
+          @actor[i] = createActor actor, context, fail
 
       run: (prevArgsList, done) ->
         argsList = []
-        for actor, i in @actors
+        for actor, i in @actor
           argsList[i] = null
           do (i) ->
             actor.run prevArgsList, (args) ->
@@ -187,7 +185,7 @@ do (exports = if typeof exports is 'undefined' then @ else exports) ->
                 done argsList
 
       cancel: ->
-        for actor in @actors
+        for actor in @actor
           actor.cancel()
 
     class FailTask extends SingleTask
