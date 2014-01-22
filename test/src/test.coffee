@@ -4,16 +4,10 @@ now = ->
 describe 'zazen tests', ->
   describe 'The', ->
     describe '.then()', ->
-      it "should be implemented", ->
-        expect(The.then).to.be.a 'function'
-
       it "should be a shorthand for `new The().then()`", ->
         expect(The.then(->)).to.be.a The
 
     describe '.wait()', ->
-      it "should be implemented", ->
-        expect(The.wait).to.be.a 'function'
-
       it "should be a shorthand for `new The().wait()`", ->
         i = -1
         time = now()
@@ -89,11 +83,6 @@ describe 'zazen tests', ->
         expect(The()).to.be.a The
 
     describe '#then()', ->
-      it "should be implemented", ->
-        expect(The::then).to.be.a 'function'
-        expect(new The().then).to.be.a 'function'
-        expect(The().then).to.be.a 'function'
-
       it "should require one parameter", ->
         expect(->
           The.then()
@@ -358,11 +347,6 @@ describe 'zazen tests', ->
             done()
 
     describe '#wait()', ->
-      it "should be implemented", ->
-        expect(The::wait).to.be.a 'function'
-        expect(new The().wait).to.be.a 'function'
-        expect(The().wait).to.be.a 'function'
-
       it "should defer next task", ->
         i = -1
         time = now()
@@ -376,11 +360,6 @@ describe 'zazen tests', ->
         expect(++i).to.be.equal 0
 
     describe '#pause()', ->
-      it "should be implemented", ->
-        expect(The::pause).to.be.a 'function'
-        expect(new The().pause).to.be.a 'function'
-        expect(The().pause).to.be.a 'function'
-
       it "should pause the flow", (done) ->
         the = The
         .then (done) ->
@@ -414,11 +393,6 @@ describe 'zazen tests', ->
         , 300
 
     describe '#stop()', ->
-      it "should be implemented", ->
-        expect(The::stop).to.be.a 'function'
-        expect(new The().stop).to.be.a 'function'
-        expect(The().stop).to.be.a 'function'
-
       it "should pause and reset the flow", (done) ->
         the = The
         .then (done) ->
@@ -434,11 +408,6 @@ describe 'zazen tests', ->
         , 300
 
     describe '#resume()', ->
-      it "should be implemented", ->
-        expect(The::resume).to.be.a 'function'
-        expect(new The().resume).to.be.a 'function'
-        expect(The().resume).to.be.a 'function'
-
       it "should resume paused flow", (done) ->
         i = -1
         time = now()
