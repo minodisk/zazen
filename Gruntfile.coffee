@@ -29,21 +29,27 @@ module.exports = (grunt) ->
           'package.json'
           'bower.json'
         ]
-        commit: false
-        createTag: false
-        push: false
+        pushTo: 'origin'
+#        commit: false
+#        createTag: false
+#        push: false
 
     release:
       options:
         bump: false
-        add: true
-        commit: true
-        commitMessage: 'Release v<%= version %>'
-        push: true
-        tag: true
-        tagName: 'v<%= version %>'
-        tagMessage: 'Version <%= version %>'
-        pushTags: true
+        add false
+        commit: false
+        push: false
+        tag: false
+        pushTags: false
+#        add: true
+#        commit: true
+#        commitMessage: 'Release v<%= version %>'
+#        push: true
+#        tag: true
+#        tagName: 'v<%= version %>'
+#        tagMessage: 'Version <%= version %>'
+#        pushTags: true
 
   grunt.loadNpmTasks 'grunt-contrib-watch'
   grunt.loadNpmTasks 'grunt-contrib-coffee'
