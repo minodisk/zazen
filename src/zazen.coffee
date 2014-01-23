@@ -135,10 +135,13 @@ do (exports = if typeof exports is 'undefined' then @ else exports) ->
     _then: (argsList = []) ->
       return unless @isRunning
       index = @index
+
+      # Find nearest non-FailTask.
+      # If non-FailTask is not found, finish flow.
       break while (task = @tasks[++index])? when not (task instanceof FailTask)
       return unless task?
-      @index = index
 
+      @index = index
       if The.verbose then (console?.log ? alert) "#{@toVerboseString()}#_then()"
       task.run argsList, @_then
 
@@ -146,18 +149,16 @@ do (exports = if typeof exports is 'undefined' then @ else exports) ->
       index = @index
       @pause()
 
-      # Jump to nearest FailTask
-      while ++index < @tasks.length
-        if (task = @tasks[index]) instanceof FailTask
-          @index = index
-          if The.verbose then (console?.log ? alert) "#{@toVerboseString()}#_fail()"
-          task.run err, (argsList) =>
-            @isRunning = true
-            @_then argsList
-          return @
+      # Find nearest FailTask.
+      # If FailTask is not found, throw error and finish flow.
+      break while (task = @tasks[++index])? when task instanceof FailTask
+      return throw err unless task?
 
-      # nor throws error
-      throw err
+      @index = index
+      if The.verbose then (console?.log ? alert) "#{@toVerboseString()}#_fail()"
+      task.run err, (argsList) =>
+        @isRunning = true
+        @_then argsList
 
 
   { createTask, FailTask } = do ->
@@ -166,7 +167,7 @@ do (exports = if typeof exports is 'undefined' then @ else exports) ->
       indent: 2
       name: 'Task'
 
-      constructor: (@actor) ->
+      constructor: ->
         super()
 
       run: ->
@@ -180,7 +181,8 @@ do (exports = if typeof exports is 'undefined' then @ else exports) ->
       name: 'SingleTask'
 
       constructor: (actor, context, fail) ->
-        super createActor actor, context, fail
+        super()
+        @actor = createActor actor, context, fail
 
       run: (prevArgsList, done) ->
         super()
@@ -196,7 +198,8 @@ do (exports = if typeof exports is 'undefined' then @ else exports) ->
       name: 'MultiTask'
 
       constructor: (actors, context, fail) ->
-        super []
+        super()
+        @actor = []
         for actor, i in actors
           @actor[i] = createActor actor, context, fail
 
@@ -218,17 +221,22 @@ do (exports = if typeof exports is 'undefined' then @ else exports) ->
         for actor in @actor
           actor.cancel()
 
-    class FailTask extends SingleTask
+    class FailTask extends Task
 
       name: 'FailTask'
 
       constructor: (actor, context, fail) ->
-        super actor, context, fail
+        super()
+        @actor = createActor actor, context, fail, true
 
       run: (err, done) ->
-        if The.verbose then (console?.log ? alert) "#{@toVerboseString()}#run"
+        super()
         @actor.run err, (args) ->
           done args
+
+      cancel: ->
+        super()
+        @actor.cancel()
 
     createTask: (actors, context, fail) ->
       if isArray actors
@@ -264,7 +272,7 @@ do (exports = if typeof exports is 'undefined' then @ else exports) ->
 
       name: 'SyncActor'
 
-      constructor: (runner, context, fail) ->
+      constructor: (runner, context, fail, isFail = false) ->
         super (prevArgsList, done) =>
           @timeoutId = defer =>
             try
@@ -275,14 +283,15 @@ do (exports = if typeof exports is 'undefined' then @ else exports) ->
               new TheActor(returns).run prevArgsList, (args) ->
                 done.apply null, args
             else
-              done()
+              unless isFail
+                done()
         , context
 
     class AsyncActor extends Actor
 
       name: 'AsyncActor'
 
-      constructor: (runner, context, fail, @doneIndex) ->
+      constructor: (runner, context, fail, doneIndex) ->
         super if doneIndex is 0
           (prevArgsList, done) =>
             @timeoutId = defer =>
@@ -299,8 +308,8 @@ do (exports = if typeof exports is 'undefined' then @ else exports) ->
                 fail @, err
         , context
 
-      toVerboseString: ->
-        "#{super()}{ doneIndex: #{@doneIndex} }"
+#      toVerboseString: ->
+#        "#{super()}{ doneIndex: #{@doneIndex} }"
 
     class TheActor extends Actor
 
@@ -316,7 +325,7 @@ do (exports = if typeof exports is 'undefined' then @ else exports) ->
       cancel: ->
         @runner.pause()
 
-    (runner, context, fail) ->
+    (runner, context, fail, isFail = false) ->
       if runner instanceof Actor
         runner
       else if runner instanceof The
@@ -324,7 +333,7 @@ do (exports = if typeof exports is 'undefined' then @ else exports) ->
       else if isFunction runner
         args = getArgumentNames runner
         if args.length is 0 or args[args.length - 1] isnt 'done'
-          new SyncActor runner, context, fail
+          new SyncActor runner, context, fail, isFail
         else
           new AsyncActor runner, context, fail, args.length - 1
       else
