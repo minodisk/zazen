@@ -32,6 +32,7 @@
     "grunt-contrib-coffee": "~0.8.0",
     "grunt-bump": "0.0.13",
     "grunt-release": "~0.6.0",
+    "grunt-docco": "~0.3.2",
     "mocha": "~1.17.0",
     "expect.js": "~0.2.0"
   }

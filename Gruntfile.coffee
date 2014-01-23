@@ -9,6 +9,11 @@ module.exports = (grunt) ->
           'src/*.coffee'
         ]
         tasks: [ 'lib' ]
+      doc:
+        files: [
+          'docs/*.coffee'
+        ]
+        tasks: [ 'doc' ]
 
     coffee:
       lib:
@@ -22,6 +27,10 @@ module.exports = (grunt) ->
           dest: 'lib'
           ext: '.js'
         ]
+
+    docco:
+      doc:
+        src: [ 'docs/**/*.coffee' ]
 
     bump:
       options:
@@ -37,7 +46,7 @@ module.exports = (grunt) ->
     release:
       options:
         bump: false
-        add false
+        add: false
         commit: false
         push: false
         tag: false
@@ -53,6 +62,7 @@ module.exports = (grunt) ->
 
   grunt.loadNpmTasks 'grunt-contrib-watch'
   grunt.loadNpmTasks 'grunt-contrib-coffee'
+  grunt.loadNpmTasks 'grunt-docco'
   grunt.loadNpmTasks 'grunt-bump'
   grunt.loadNpmTasks 'grunt-release'
 
@@ -62,9 +72,13 @@ module.exports = (grunt) ->
   ]
   grunt.registerTask 'run', [
     'lib'
+    'doc'
   ]
   grunt.registerTask 'lib', [
     'coffee:lib'
+  ]
+  grunt.registerTask 'doc', [
+    'docco:doc'
   ]
   grunt.registerTask 'publish', [
     'bump'
