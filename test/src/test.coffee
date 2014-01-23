@@ -509,7 +509,7 @@ describe 'The', ->
           ->
             throw new Error 'a'
         , ->
-            throw new Error 'b'
+            ''
         ])
       .fail (err) ->
           expect(++i).to.be.equal 0
@@ -527,16 +527,15 @@ describe 'The', ->
               done()
             , 100
         , (done) ->
-            throw new Error 'b'
             setTimeout ->
-              expect().fail()
               done()
-            , 100
+            , 200
         ])
       .fail (err) ->
           expect(++i).to.be.equal 0
           expect(err.message).to.be.equal 'a'
-          done()
+
+      setTimeout done, 300
 
     it "should be able to recover the flow when done is called", (done) ->
       The

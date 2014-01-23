@@ -558,7 +558,7 @@
           function() {
             throw new Error('a');
           }, function() {
-            throw new Error('b');
+            return '';
           }
         ]).fail(function(err) {
           expect(++i).to.be.equal(0);
@@ -569,7 +569,7 @@
       it("should run when catch error in async parallel actors", function(done) {
         var i;
         i = -1;
-        return The.then([
+        The.then([
           function(done) {
             throw new Error('a');
             return setTimeout(function() {
@@ -577,17 +577,15 @@
               return done();
             }, 100);
           }, function(done) {
-            throw new Error('b');
             return setTimeout(function() {
-              expect().fail();
               return done();
-            }, 100);
+            }, 200);
           }
         ]).fail(function(err) {
           expect(++i).to.be.equal(0);
-          expect(err.message).to.be.equal('a');
-          return done();
+          return expect(err.message).to.be.equal('a');
         });
+        return setTimeout(done, 300);
       });
       return it("should be able to recover the flow when done is called", function(done) {
         return The.then(function() {
