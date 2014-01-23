@@ -1,4 +1,7 @@
 do (exports = if typeof exports is 'undefined' then @ else exports) ->
+  bind = (fn, me) ->
+    ->
+      return fn.apply(me, arguments);
   toString = Object::toString
   isArray = Array.isArray or (obj) ->
     toString.call(obj) is '[object Array]'
@@ -10,7 +13,7 @@ do (exports = if typeof exports is 'undefined' then @ else exports) ->
       toString.call(obj) is '[object Function]'
   createId = do ->
     seeds = []
-    for str in ['0-9', 'a-z', 'A-Z']
+    for str in [ '0-9', 'a-z', 'A-Z' ]
       charCodes = str.split '-'
       for char, i in charCodes
         charCodes[i] = char.charCodeAt 0
@@ -71,6 +74,11 @@ do (exports = if typeof exports is 'undefined' then @ else exports) ->
       unless @ instanceof The
         return new The context
 
+      # Don't bind with `=>` operator, or global leaks problem will be raised in IE6~10
+      # when call `The()`.
+      @_then = bind @_then, @
+      @_fail = bind @_fail, @
+
       super()
       @context = context ? @
       @tasks = []
@@ -124,7 +132,7 @@ do (exports = if typeof exports is 'undefined' then @ else exports) ->
     toVerboseString: ->
       """#{super()}{ index: #{@index}, isRunning: #{@isRunning} }"""
 
-    _then: (argsList = []) =>
+    _then: (argsList = []) ->
       return unless @isRunning
       index = @index + 1
       return if index < 0 or index >= @tasks.length
@@ -134,7 +142,7 @@ do (exports = if typeof exports is 'undefined' then @ else exports) ->
       task = @tasks[@index]
       task.run argsList, @_then
 
-    _fail: (actor, err) =>
+    _fail: (actor, err) ->
       index = @index
       @pause()
 
