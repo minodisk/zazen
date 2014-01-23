@@ -308,9 +308,6 @@ do (exports = if typeof exports is 'undefined' then @ else exports) ->
                 fail @, err
         , context
 
-#      toVerboseString: ->
-#        "#{super()}{ doneIndex: #{@doneIndex} }"
-
     class TheActor extends Actor
 
       name: 'TheActor'
