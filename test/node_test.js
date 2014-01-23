@@ -89,7 +89,8 @@
           foo = new Foo();
           return foo.start().then(function() {
             expect(this).to.be.equal(foo);
-            return expect(foo.x).to.be.equal(10);
+            expect(foo.x).to.be.equal(10);
+            throw new Error('');
           }).fail(function() {
             expect(this).to.be.equal(foo);
             return done();
@@ -523,6 +524,18 @@
           }).fail(function(err) {
             expect(++i).to.be.equal(0);
             expect(err.message).to.be.equal('async1');
+            return done();
+          });
+        });
+        it("should be skipped when no error is thrown", function(done) {
+          return The.then(function(done) {
+            return done('a');
+          }).fail(function() {
+            return expect().fail();
+          }).then(function(_arg) {
+            var a;
+            a = _arg[0];
+            expect(a).to.be.equal('a');
             return done();
           });
         });

@@ -71,6 +71,7 @@ describe 'zazen tests', ->
         .then ->
             expect(@).to.be.equal foo
             expect(foo.x).to.be.equal 10
+            throw new Error ''
         .fail ->
             expect(@).to.be.equal foo
             done()
@@ -477,6 +478,16 @@ describe 'zazen tests', ->
         .fail (err) ->
             expect(++i).to.be.equal 0
             expect(err.message).to.be.equal 'async1'
+            done()
+
+      it "should be skipped when no error is thrown", (done) ->
+        The
+        .then (done) ->
+            done 'a'
+        .fail ->
+            expect().fail()
+        .then ([a]) ->
+            expect(a).to.be.equal 'a'
             done()
 
       it 'should run when catch error in parallel actors', (done) ->

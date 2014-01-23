@@ -98,7 +98,7 @@ do (exports = if typeof exports is 'undefined' then @ else exports) ->
       @
 
     wait: (duration) ->
-      if The.verbose then console.log "#{@toVerboseString()}#wait()"
+      if The.verbose then (console?.log ? alert) "#{@toVerboseString()}#wait()"
       #TODO Remove [] operator; I write [] for the bug of IntelliJ IDEA (http://youtrack.jetbrains.com/issue/WEB-10349)
       @['then'] (done) ->
         setTimeout done, duration
@@ -107,7 +107,7 @@ do (exports = if typeof exports is 'undefined' then @ else exports) ->
       return if @isRunning
       @isRunning = true
 
-      if The.verbose then console.log "#{@toVerboseString()}#resume()"
+      if The.verbose then (console?.log ? alert) "#{@toVerboseString()}#resume()"
       @_then()
       @
 
@@ -120,11 +120,11 @@ do (exports = if typeof exports is 'undefined' then @ else exports) ->
       @index--
       if @index < -1
         @index = -1
-      if The.verbose then console.log "#{@toVerboseString()}#pause()"
+      if The.verbose then (console?.log ? alert) "#{@toVerboseString()}#pause()"
       @
 
     stop: ->
-      if The.verbose then console.log "#{@toVerboseString()}#stop()"
+      if The.verbose then (console?.log ? alert) "#{@toVerboseString()}#stop()"
       @pause()
       @index = -1
       @
@@ -134,12 +134,12 @@ do (exports = if typeof exports is 'undefined' then @ else exports) ->
 
     _then: (argsList = []) ->
       return unless @isRunning
-      index = @index + 1
-      return if index < 0 or index >= @tasks.length
+      index = @index
+      break while (task = @tasks[++index])? when not (task instanceof FailTask)
+      return unless task?
       @index = index
 
-      if The.verbose then console.log "#{@toVerboseString()}#_then()"
-      task = @tasks[@index]
+      if The.verbose then (console?.log ? alert) "#{@toVerboseString()}#_then()"
       task.run argsList, @_then
 
     _fail: (actor, err) ->
@@ -150,7 +150,7 @@ do (exports = if typeof exports is 'undefined' then @ else exports) ->
       while ++index < @tasks.length
         if (task = @tasks[index]) instanceof FailTask
           @index = index
-          if The.verbose then console.log "#{@toVerboseString()}#_fail()"
+          if The.verbose then (console?.log ? alert) "#{@toVerboseString()}#_fail()"
           task.run err, (argsList) =>
             @isRunning = true
             @_then argsList
@@ -170,10 +170,10 @@ do (exports = if typeof exports is 'undefined' then @ else exports) ->
         super()
 
       run: ->
-        if The.verbose then console.log "#{@toVerboseString()}#run"
+        if The.verbose then (console?.log ? alert) "#{@toVerboseString()}#run"
 
       cancel: ->
-        if The.verbose then console.log "#{@toVerboseString()}#cancel"
+        if The.verbose then (console?.log ? alert) "#{@toVerboseString()}#cancel"
 
     class SingleTask extends Task
 
@@ -226,7 +226,7 @@ do (exports = if typeof exports is 'undefined' then @ else exports) ->
         super actor, context, fail
 
       run: (err, done) ->
-        if The.verbose then console.log "#{@toVerboseString()}#run"
+        if The.verbose then (console?.log ? alert) "#{@toVerboseString()}#run"
         @actor.run err, (args) ->
           done args
 
@@ -248,12 +248,12 @@ do (exports = if typeof exports is 'undefined' then @ else exports) ->
         super()
 
       run: (prevArgsList, done) ->
-        if The.verbose then console.log "#{@toVerboseString()}#run"
+        if The.verbose then (console?.log ? alert) "#{@toVerboseString()}#run"
         @runner prevArgsList, (args...) ->
           done args
 
       cancel: ->
-        if The.verbose then console.log "#{@toVerboseString()}#cancel"
+        if The.verbose then (console?.log ? alert) "#{@toVerboseString()}#cancel"
         if @timeoutId?
           clearTimeout @timeoutId
           @timeoutId = null
