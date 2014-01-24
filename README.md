@@ -14,7 +14,7 @@ Async flow controller
 
 ## Usage
 
-[usage](http://minodisk.github.io/zazen/doc/usage.html)
+[usage](http://minodisk.github.io/zazen/docs/usage.html)
 
 ## Install
 
