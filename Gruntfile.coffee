@@ -6,12 +6,12 @@ module.exports = (grunt) ->
     watch:
       lib:
         files: [
-          'src/*.coffee'
+          'src/**/*.coffee'
         ]
         tasks: [ 'lib' ]
       doc:
         files: [
-          'docs/*.coffee'
+          'docs/**/*.coffee'
         ]
         tasks: [ 'doc' ]
 
