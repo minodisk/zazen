@@ -4,11 +4,16 @@ module.exports = (grunt) ->
     pkg: grunt.file.readJSON 'package.json'
 
     watch:
-      lib:
+      main:
         files: [
-          'src/**/*.coffee'
+          'src/zazen.coffee'
         ]
-        tasks: [ 'lib' ]
+        tasks: [ 'main' ]
+      jquerize:
+        files: [
+          'src/jquerize.coffee'
+        ]
+        tasks: [ 'jquerize' ]
       doc:
         files: [
           'docs/**/*.coffee'
@@ -16,17 +21,16 @@ module.exports = (grunt) ->
         tasks: [ 'doc' ]
 
     coffee:
-      lib:
+      main:
+#        options:
+#          bare: true
+        files:
+          'zazen.js': [ 'src/zazen.coffee' ]
+      jquerize:
         options:
-          bare: true
-        files: [
-          expand: true
-          flatten: true
-          cwd: 'src'
-          src: [ '*.coffee' ]
-          dest: 'lib'
-          ext: '.js'
-        ]
+          join: true
+        files:
+          'jquery.zazen.js': [ 'src/zazen.coffee', 'src/jquerize.coffee' ]
 
     docco:
       doc:
@@ -71,11 +75,15 @@ module.exports = (grunt) ->
     'watch'
   ]
   grunt.registerTask 'run', [
-    'lib'
+    'main'
+    'jquerize'
     'doc'
   ]
-  grunt.registerTask 'lib', [
-    'coffee:lib'
+  grunt.registerTask 'main', [
+    'coffee:main'
+  ]
+  grunt.registerTask 'jquerize', [
+    'coffee:jquerize'
   ]
   grunt.registerTask 'doc', [
     'docco:doc'

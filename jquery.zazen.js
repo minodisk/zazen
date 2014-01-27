@@ -1,23 +1,29 @@
-var __hasProp = {}.hasOwnProperty,
-  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
-  __slice = [].slice;
+(function() {
+  var FailTask, Klass, The, bind, createActor, createId, createTask, defer, exports, getArgumentNames, isArray, isFunction, toString, _ref,
+    __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+    __slice = [].slice;
 
-(function(exports) {
-  var FailTask, Klass, The, bind, createActor, createId, createTask, defer, getArgumentNames, isArray, isFunction, toString, _ref;
+  exports = typeof exports === 'undefined' ? this : exports;
+
   bind = function(fn, me) {
     return function() {
       return fn.apply(me, arguments);
     };
   };
+
   toString = Object.prototype.toString;
+
   isArray = Array.isArray || function(obj) {
     return toString.call(obj) === '[object Array]';
   };
+
   isFunction = typeof /./ !== 'function' ? function(obj) {
     return typeof obj === 'function';
   } : function(obj) {
     return toString.call(obj) === '[object Function]';
   };
+
   createId = (function() {
     var char, charCode, charCodes, i, length, seeds, str, _i, _j, _k, _len, _len1, _ref, _ref1, _ref2;
     seeds = [];
@@ -46,9 +52,11 @@ var __hasProp = {}.hasOwnProperty,
       return hash;
     };
   })();
+
   defer = function(callback) {
     return setTimeout(callback, 0);
   };
+
   getArgumentNames = (function() {
     var rArgument, rComment;
     rArgument = /\(([\s\S]*?)\)/;
@@ -62,6 +70,7 @@ var __hasProp = {}.hasOwnProperty,
       return paramStr.split(',');
     };
   })();
+
   Klass = (function() {
     Klass.prototype.indent = 0;
 
@@ -79,6 +88,7 @@ var __hasProp = {}.hasOwnProperty,
     return Klass;
 
   })();
+
   The = (function(_super) {
     __extends(The, _super);
 
@@ -227,6 +237,7 @@ var __hasProp = {}.hasOwnProperty,
     return The;
 
   })(Klass);
+
   _ref = (function() {
     var FailTask, MultiTask, SingleTask, Task;
     Task = (function(_super) {
@@ -375,6 +386,7 @@ var __hasProp = {}.hasOwnProperty,
       FailTask: FailTask
     };
   })(), createTask = _ref.createTask, FailTask = _ref.FailTask;
+
   createActor = (function() {
     var Actor, AsyncActor, SyncActor, TheActor;
     Actor = (function(_super) {
@@ -529,5 +541,23 @@ var __hasProp = {}.hasOwnProperty,
       }
     };
   })();
-  return exports.The = The;
-})(typeof exports === 'undefined' ? this : exports);
+
+  exports.The = The;
+
+  $.extend({
+    tajax: function() {
+      return The.then(function(fail, done) {
+        return $.ajax.apply(this, arguments).fail(fail).then(done);
+      });
+    }
+  });
+
+  $.fn.extend({
+    tanimate: function() {
+      return The(this).then(function(fail, done) {
+        return $.fn.animate.apply(this, arguments).promise().fail(fail).then(done);
+      });
+    }
+  });
+
+}).call(this);

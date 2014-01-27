@@ -3,7 +3,7 @@
 
   expect = require('../node_modules/expect.js');
 
-  The = require('../lib/zazen').The;
+  The = require('../zazen').The;
 
   now = function() {
     return new Date().getTime();
