@@ -11,6 +11,16 @@ isFunction = if typeof (/./) isnt 'function'
 else
   (obj) ->
     toString.call(obj) is '[object Function]'
+indexOf = if Array::indexOf?
+  (array, item) ->
+    array.indexOf item
+else
+  (array, item) ->
+    return -1 unless array?
+    for elem, i in array
+      if elem is item
+        return i
+    return -1
 createId = do ->
   seeds = []
   for str in [ '0-9', 'a-z', 'A-Z' ]
@@ -76,8 +86,8 @@ class The extends Klass
 
     # Don't bind with `=>` operator, or global leaks problem will be raised in IE6~10
     # when call `The()`.
-    @_then = bind @_then, @
-    @_fail = bind @_fail, @
+    @_onResolved = bind @_onResolved, @
+    @_onRejected = bind @_onRejected, @
 
     super()
     @context = context ? @
@@ -88,12 +98,12 @@ class The extends Klass
   then: (actors) ->
     if arguments.length isnt 1
       throw new TypeError 'The#then() requires one parameter: instance of `The`, `Function` or `Array<Function>`'
-    @tasks.push createTask actors, @context, @_fail
+    @tasks.push createTask actors, @context, @_onRejected
     @resume()
     @
 
   fail: (actor) ->
-    @tasks.push new FailTask actor, @context, @_fail
+    @tasks.push new FailTask actor, @context, @_onRejected
     @resume()
     @
 
@@ -108,7 +118,7 @@ class The extends Klass
     @isRunning = true
 
     if The.verbose then (console?.log ? alert) "#{@toVerboseString()}#resume()"
-    @_then()
+    @_onResolved()
     @
 
   pause: ->
@@ -132,7 +142,7 @@ class The extends Klass
   toVerboseString: ->
     """#{super()}{ index: #{@index}, isRunning: #{@isRunning} }"""
 
-  _then: (argsList = []) ->
+  _onResolved: (argsList = []) ->
     return unless @isRunning
     index = @index
 
@@ -142,10 +152,10 @@ class The extends Klass
     return unless task?
 
     @index = index
-    if The.verbose then (console?.log ? alert) "#{@toVerboseString()}#_then()"
-    task.run argsList, @_then
+    if The.verbose then (console?.log ? alert) "#{@toVerboseString()}#_onResolved()"
+    task.run argsList, @_onResolved
 
-  _fail: (actor, err) ->
+  _onRejected: (actor, err) ->
     index = @index
     @pause()
 
@@ -155,10 +165,10 @@ class The extends Klass
     return throw err unless task?
 
     @index = index
-    if The.verbose then (console?.log ? alert) "#{@toVerboseString()}#_fail()"
+    if The.verbose then (console?.log ? alert) "#{@toVerboseString()}#_onRejected()"
     task.run err, (argsList) =>
       @isRunning = true
-      @_then argsList
+      @_onResolved argsList
 
 
 { createTask, FailTask } = do ->
@@ -268,11 +278,27 @@ createActor = do ->
       if isFunction @canceller
         @canceller.call @context
 
+  class AsyncActor extends Actor
+
+    name: 'AsyncActor'
+
+    constructor: (runner, context, reject, argNames) ->
+      resolveIndex = indexOf argNames, 'resolve'
+      super (prevArgsList, resolve) =>
+        args = [prevArgsList]
+        args[resolveIndex] = resolve
+        @timeoutId = defer =>
+          try
+            @canceller = runner.apply context, args
+          catch err
+            reject @, err
+      , context
+
   class SyncActor extends Actor
 
     name: 'SyncActor'
 
-    constructor: (runner, context, reject, isFail = false) ->
+    constructor: (runner, context, reject, argNames, isFail = false) ->
       super (prevArgsList, resolve) =>
         @timeoutId = defer =>
           try
@@ -285,27 +311,6 @@ createActor = do ->
           else
             unless isFail
               resolve()
-      , context
-
-  class AsyncActor extends Actor
-
-    name: 'AsyncActor'
-
-    constructor: (runner, context, reject, doneIndex) ->
-      super if doneIndex is 0
-        (prevArgsList, resolve) =>
-          @timeoutId = defer =>
-            try
-              @canceller = runner.call context, resolve
-            catch err
-              reject @, err
-      else
-        (prevArgsList, resolve) =>
-          @timeoutId = defer =>
-            try
-              @canceller = runner.call context, prevArgsList, resolve
-            catch err
-              reject @, err
       , context
 
   class TheActor extends Actor
@@ -328,11 +333,11 @@ createActor = do ->
     else if runner instanceof The
       new TheActor runner
     else if isFunction runner
-      args = getArgumentNames runner
-      if args.length is 0 or args[args.length - 1] isnt 'resolve'
-        new SyncActor runner, context, fail, isFail
+      argNames = getArgumentNames runner
+      if indexOf(argNames, 'resolve') is -1
+        new SyncActor runner, context, fail, argNames, isFail
       else
-        new AsyncActor runner, context, fail, args.length - 1
+        new AsyncActor runner, context, fail, argNames
     else
       throw new TypeError "runner must be specified as `The` instance or `function`"
 
