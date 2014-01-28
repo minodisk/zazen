@@ -12,13 +12,14 @@
       });
     });
     describe('.wait()', function() {
-      return it("should be a shorthand for `new The().wait()`", function() {
+      return it("should be a shorthand for `new The().wait()`", function(done) {
         var i, time;
         i = -1;
         time = now();
         The.wait(100).then(function() {
           expect(++i).to.be.equal(1);
-          return expect(now() - time).to.be.above(100);
+          expect(now() - time).to.be.above(100);
+          return done();
         });
         return expect(++i).to.be.equal(0);
       });
@@ -65,14 +66,14 @@
           }
 
           Foo.prototype.start = function() {
-            return The(this).then(function(done) {
+            return The(this).then(function(resolve) {
               var intervalId,
                 _this = this;
               expect(this.x).to.be.equal(0);
               return intervalId = setInterval(function() {
                 if (++_this.x >= 10) {
                   clearInterval(intervalId);
-                  return done();
+                  return resolve();
                 }
               }, 33);
             });
@@ -148,25 +149,25 @@
         var i, time;
         i = -1;
         time = now();
-        The.then(function(done) {
+        The.then(function(resolve) {
           expect(i).to.be.equal(0, 'then0');
           return setTimeout(function() {
             expect(++i).to.be.equal(1, 'then0+');
-            return done();
+            return resolve();
           }, 100);
-        }).then(function(done) {
+        }).then(function(resolve) {
           expect(i).to.be.equal(1, 'then1');
           expect(now() - time).to.be.above(100);
           return setTimeout(function() {
             expect(++i).to.be.equal(2, 'then1+');
-            return done();
+            return resolve();
           }, 100);
-        }).then(function(done) {
+        }).then(function(resolve) {
           expect(i).to.be.equal(2, 'then2');
           expect(now() - time).to.be.above(200);
           return setTimeout(function() {
             expect(++i).to.be.equal(3, 'then2+');
-            return done();
+            return resolve();
           }, 100);
         }).then(function() {
           expect(++i).to.be.equal(4, 'then4');
@@ -180,23 +181,23 @@
         i = -1;
         time = now();
         The.then([
-          function(done) {
+          function(resolve) {
             expect(i).to.be.equal(0);
             return setTimeout(function() {
               expect(++i).to.be.equal(3, 'then3');
-              return done();
+              return resolve();
             }, 300);
-          }, function(done) {
+          }, function(resolve) {
             expect(i).to.be.equal(0);
             return setTimeout(function() {
               expect(++i).to.be.equal(1, 'then1');
-              return done();
+              return resolve();
             }, 100);
-          }, function(done) {
+          }, function(resolve) {
             expect(i).to.be.equal(0);
             return setTimeout(function() {
               expect(++i).to.be.equal(2, 'then2');
-              return done();
+              return resolve();
             }, 200);
           }
         ]).then(function() {
@@ -212,11 +213,11 @@
         time = now();
         actors = [];
         _fn = function(j) {
-          return actors.push(function(done) {
+          return actors.push(function(resolve) {
             expect(i).to.be.equal(0);
             return setTimeout(function() {
               expect(++i).to.be.equal(j);
-              return done();
+              return resolve();
             }, 100 * j);
           });
         };
@@ -259,33 +260,33 @@
         return expect(++i).to.be.equal(0, 'outer');
       });
       return it("should pass parameters to next runner", function(done) {
-        return The.then(function(done) {
-          return done('a', 'b');
-        }).then(function(res, done) {
+        return The.then(function(resolve) {
+          return resolve('a', 'b');
+        }).then(function(res, resolve) {
           expect(res[0]).to.be.equal('a');
           expect(res[1]).to.be.equal('b');
           return setTimeout(function() {
-            return done('c', 'd');
+            return resolve('c', 'd');
           }, 10);
         }).then([
-          function(res, done) {
+          function(res, resolve) {
             expect(res[0]).to.be.equal('c');
             expect(res[1]).to.be.equal('d');
             return setTimeout(function() {
-              return done('e', 'f');
+              return resolve('e', 'f');
             }, 20);
-          }, function(res, done) {
+          }, function(res, resolve) {
             expect(res[0]).to.be.equal('c');
             expect(res[1]).to.be.equal('d');
-            return done('g', 'h');
-          }, function(res, done) {
+            return resolve('g', 'h');
+          }, function(res, resolve) {
             expect(res[0]).to.be.equal('c');
             expect(res[1]).to.be.equal('d');
             return setTimeout(function() {
-              return done('i', 'j');
+              return resolve('i', 'j');
             }, 10);
           }
-        ]).then(function(_arg, done) {
+        ]).then(function(_arg, resolve) {
           var res0, res1, res2;
           res0 = _arg[0], res1 = _arg[1], res2 = _arg[2];
           expect(res0[0]).to.be.equal('e');
@@ -295,22 +296,22 @@
           expect(res2[0]).to.be.equal('i');
           expect(res2[1]).to.be.equal('j');
           return setTimeout(function() {
-            return done('k', 'l');
+            return resolve('k', 'l');
           }, 10);
         }).then(function(res) {
           expect(res[0]).to.be.equal('k');
           expect(res[1]).to.be.equal('l');
           return The.then([
-            function(done) {
+            function(resolve) {
               return setTimeout(function() {
-                return done('m', 'n');
+                return resolve('m', 'n');
               }, 20);
-            }, function(done) {
+            }, function(resolve) {
               return setTimeout(function() {
-                return done('o', 'p');
+                return resolve('o', 'p');
               }, 10);
-            }, function(done) {
-              return done('q', 'r');
+            }, function(resolve) {
+              return resolve('q', 'r');
             }
           ]);
         }).then(function(_arg) {
@@ -323,14 +324,14 @@
           expect(res2[0]).to.be.equal('q');
           expect(res2[1]).to.be.equal('r');
           return The.then([
-            The.then(function(done) {
-              return done('s', 't');
-            }), The.then(function(done) {
+            The.then(function(resolve) {
+              return resolve('s', 't');
+            }), The.then(function(resolve) {
               return setTimeout(function() {
-                return done('u', 'v');
+                return resolve('u', 'v');
               }, 10);
-            }), The.then(function(done) {
-              return done('x', 'y');
+            }), The.then(function(resolve) {
+              return resolve('x', 'y');
             })
           ]);
         }).then(function(_arg) {
@@ -344,19 +345,19 @@
           expect(res2[1]).to.be.equal('y');
           return The.then([
             function() {
-              return The.then(function(done) {
+              return The.then(function(resolve) {
                 return setTimeout(function() {
-                  return done('z', 'A');
+                  return resolve('z', 'A');
                 }, 10);
               });
             }, function() {
-              return The.then(function(done) {
-                return done('B', 'C');
+              return The.then(function(resolve) {
+                return resolve('B', 'C');
               });
             }, function() {
-              return The.then(function(done) {
+              return The.then(function(resolve) {
                 return setTimeout(function() {
-                  return done('D', 'E');
+                  return resolve('D', 'E');
                 }, 20);
               });
             }
@@ -391,8 +392,8 @@
     describe('#pause()', function() {
       it("should pause the flow", function(done) {
         var the;
-        the = The.then(function(done) {
-          return setTimeout(done, 200);
+        the = The.then(function(resolve) {
+          return setTimeout(resolve, 200);
         }).then(function() {
           return expect().fail();
         });
@@ -408,11 +409,11 @@
       });
       return it("should call canceller", function(done) {
         var the;
-        the = The.then(function(done) {
+        the = The.then(function(resolve) {
           var timeoutId;
           timeoutId = setTimeout(function() {
             expect().fail();
-            return done();
+            return resolve();
           }, 200);
           return function() {
             return clearTimeout(timeoutId);
@@ -429,8 +430,8 @@
     describe('#stop()', function() {
       return it("should pause and reset the flow", function(done) {
         var the;
-        the = The.then(function(done) {
-          return setTimeout(done, 200);
+        the = The.then(function(resolve) {
+          return setTimeout(resolve, 200);
         }).then(function() {
           return expect().fail();
         });
@@ -448,13 +449,13 @@
         var i, the, time;
         i = -1;
         time = now();
-        the = The.then(function(done) {
+        the = The.then(function(resolve) {
           var timeoutId;
           expect(++i).to.be.equal(1);
           expect(the.index).to.be.equal(0);
           timeoutId = setTimeout(function() {
             expect(the.index).to.be.equal(0);
-            return done();
+            return resolve();
           }, 200);
           return function() {
             expect(--i).to.be.equal(0);
@@ -481,8 +482,8 @@
     });
     return describe('#fail()', function() {
       it("should be skipped when no error is thrown", function(done) {
-        return The.then(function(done) {
-          return done('a');
+        return The.then(function(resolve) {
+          return resolve('a');
         }).fail(function() {
           return expect().fail();
         }).then(function(_arg) {
@@ -533,13 +534,13 @@
       it("should run when catch error thrown in async actor", function(done) {
         var i;
         i = -1;
-        return The.then(function(done) {
-          return done('async1');
-        }).then(function(message, done) {
+        return The.then(function(resolve) {
+          return resolve('async1');
+        }).then(function(message, resolve) {
           throw new Error(message);
           return setTimeout(function() {
             expect().fail();
-            return done();
+            return resolve();
           }, 100);
         }).fail(function(err) {
           expect(++i).to.be.equal(0);
@@ -566,15 +567,15 @@
         var i;
         i = -1;
         The.then([
-          function(done) {
+          function(resolve) {
             throw new Error('a');
             return setTimeout(function() {
               expect().fail();
-              return done();
+              return resolve();
             }, 100);
-          }, function(done) {
+          }, function(resolve) {
             return setTimeout(function() {
-              return done();
+              return resolve();
             }, 200);
           }
         ]).fail(function(err) {
@@ -587,9 +588,9 @@
         return The.then(function() {
           throw new Error('a');
           return expect().fail();
-        }).fail(function(err, done) {
+        }).fail(function(err, resolve) {
           if (err.message === 'a') {
-            return done('b');
+            return resolve('b');
           } else {
             return expect().fail();
           }

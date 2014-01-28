@@ -137,8 +137,8 @@
       if (The.verbose) {
         ((_ref = typeof console !== "undefined" && console !== null ? console.log : void 0) != null ? _ref : alert)("" + (this.toVerboseString()) + "#wait()");
       }
-      return this['then'](function(done) {
-        return setTimeout(done, duration);
+      return this['then'](function(resolve) {
+        return setTimeout(resolve, duration);
       });
     };
 
@@ -402,7 +402,7 @@
         Actor.__super__.constructor.call(this);
       }
 
-      Actor.prototype.run = function(prevArgsList, done) {
+      Actor.prototype.run = function(prevArgsList, resolve) {
         var _ref1;
         if (The.verbose) {
           ((_ref1 = typeof console !== "undefined" && console !== null ? console.log : void 0) != null ? _ref1 : alert)("" + (this.toVerboseString()) + "#run");
@@ -410,7 +410,7 @@
         return this.runner(prevArgsList, function() {
           var args;
           args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
-          return done(args);
+          return resolve(args);
         });
       };
 
@@ -436,27 +436,27 @@
 
       SyncActor.prototype.name = 'SyncActor';
 
-      function SyncActor(runner, context, fail, isFail) {
+      function SyncActor(runner, context, reject, isFail) {
         var _this = this;
         if (isFail == null) {
           isFail = false;
         }
-        SyncActor.__super__.constructor.call(this, function(prevArgsList, done) {
+        SyncActor.__super__.constructor.call(this, function(prevArgsList, resolve) {
           return _this.timeoutId = defer(function() {
             var err, returns;
             try {
               returns = runner.call(context, prevArgsList);
             } catch (_error) {
               err = _error;
-              fail(_this, err);
+              reject(_this, err);
             }
             if (returns instanceof The) {
               return new TheActor(returns).run(prevArgsList, function(args) {
-                return done.apply(null, args);
+                return resolve.apply(null, args);
               });
             } else {
               if (!isFail) {
-                return done();
+                return resolve();
               }
             }
           });
@@ -471,26 +471,26 @@
 
       AsyncActor.prototype.name = 'AsyncActor';
 
-      function AsyncActor(runner, context, fail, doneIndex) {
+      function AsyncActor(runner, context, reject, doneIndex) {
         var _this = this;
-        AsyncActor.__super__.constructor.call(this, doneIndex === 0 ? function(prevArgsList, done) {
+        AsyncActor.__super__.constructor.call(this, doneIndex === 0 ? function(prevArgsList, resolve) {
           return _this.timeoutId = defer(function() {
             var err;
             try {
-              return _this.canceller = runner.call(context, done);
+              return _this.canceller = runner.call(context, resolve);
             } catch (_error) {
               err = _error;
-              return fail(_this, err);
+              return reject(_this, err);
             }
           });
-        } : function(prevArgsList, done) {
+        } : function(prevArgsList, resolve) {
           return _this.timeoutId = defer(function() {
             var err;
             try {
-              return _this.canceller = runner.call(context, prevArgsList, done);
+              return _this.canceller = runner.call(context, prevArgsList, resolve);
             } catch (_error) {
               err = _error;
-              return fail(_this, err);
+              return reject(_this, err);
             }
           });
         }, context);
@@ -509,8 +509,8 @@
         TheActor.__super__.constructor.call(this, the);
       }
 
-      TheActor.prototype.run = function(prevArgsList, done) {
-        return this.runner.then(done);
+      TheActor.prototype.run = function(prevArgsList, resolve) {
+        return this.runner.then(resolve);
       };
 
       TheActor.prototype.cancel = function() {
@@ -531,7 +531,7 @@
         return new TheActor(runner);
       } else if (isFunction(runner)) {
         args = getArgumentNames(runner);
-        if (args.length === 0 || args[args.length - 1] !== 'done') {
+        if (args.length === 0 || args[args.length - 1] !== 'resolve') {
           return new SyncActor(runner, context, fail, isFail);
         } else {
           return new AsyncActor(runner, context, fail, args.length - 1);

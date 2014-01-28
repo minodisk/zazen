@@ -100,8 +100,8 @@ class The extends Klass
   wait: (duration) ->
     if The.verbose then (console?.log ? alert) "#{@toVerboseString()}#wait()"
     #TODO Remove [] operator; I write [] for the bug of IntelliJ IDEA (http://youtrack.jetbrains.com/issue/WEB-10349)
-    @['then'] (done) ->
-      setTimeout done, duration
+    @['then'] (resolve) ->
+      setTimeout resolve, duration
 
   resume: ->
     return if @isRunning
@@ -255,10 +255,10 @@ createActor = do ->
     constructor: (@runner, @context) ->
       super()
 
-    run: (prevArgsList, done) ->
+    run: (prevArgsList, resolve) ->
       if The.verbose then (console?.log ? alert) "#{@toVerboseString()}#run"
       @runner prevArgsList, (args...) ->
-        done args
+        resolve args
 
     cancel: ->
       if The.verbose then (console?.log ? alert) "#{@toVerboseString()}#cancel"
@@ -272,40 +272,40 @@ createActor = do ->
 
     name: 'SyncActor'
 
-    constructor: (runner, context, fail, isFail = false) ->
-      super (prevArgsList, done) =>
+    constructor: (runner, context, reject, isFail = false) ->
+      super (prevArgsList, resolve) =>
         @timeoutId = defer =>
           try
             returns = runner.call context, prevArgsList
           catch err
-            fail @, err
+            reject @, err
           if returns instanceof The
             new TheActor(returns).run prevArgsList, (args) ->
-              done.apply null, args
+              resolve.apply null, args
           else
             unless isFail
-              done()
+              resolve()
       , context
 
   class AsyncActor extends Actor
 
     name: 'AsyncActor'
 
-    constructor: (runner, context, fail, doneIndex) ->
+    constructor: (runner, context, reject, doneIndex) ->
       super if doneIndex is 0
-        (prevArgsList, done) =>
+        (prevArgsList, resolve) =>
           @timeoutId = defer =>
             try
-              @canceller = runner.call context, done
+              @canceller = runner.call context, resolve
             catch err
-              fail @, err
+              reject @, err
       else
-        (prevArgsList, done) =>
+        (prevArgsList, resolve) =>
           @timeoutId = defer =>
             try
-              @canceller = runner.call context, prevArgsList, done
+              @canceller = runner.call context, prevArgsList, resolve
             catch err
-              fail @, err
+              reject @, err
       , context
 
   class TheActor extends Actor
@@ -316,8 +316,8 @@ createActor = do ->
       the.stop()
       super the
 
-    run: (prevArgsList, done) ->
-      @runner.then done
+    run: (prevArgsList, resolve) ->
+      @runner.then resolve
 
     cancel: ->
       @runner.pause()
@@ -329,7 +329,7 @@ createActor = do ->
       new TheActor runner
     else if isFunction runner
       args = getArgumentNames runner
-      if args.length is 0 or args[args.length - 1] isnt 'done'
+      if args.length is 0 or args[args.length - 1] isnt 'resolve'
         new SyncActor runner, context, fail, isFail
       else
         new AsyncActor runner, context, fail, args.length - 1

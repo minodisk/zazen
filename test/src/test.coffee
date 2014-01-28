@@ -7,7 +7,7 @@ describe 'The', ->
       expect(The.then(->)).to.be.a The
 
   describe '.wait()', ->
-    it "should be a shorthand for `new The().wait()`", ->
+    it "should be a shorthand for `new The().wait()`", (done) ->
       i = -1
       time = now()
       The
@@ -15,6 +15,7 @@ describe 'The', ->
       .then ->
           expect(++i).to.be.equal 1
           expect(now() - time).to.be.above 100
+          done()
       expect(++i).to.be.equal 0
 
   describe '#context', ->
@@ -56,12 +57,12 @@ describe 'The', ->
 
         start: ->
           The(@)
-          .then (done) ->
+          .then (resolve) ->
               expect(@x).to.be.equal 0
               intervalId = setInterval =>
                 if ++@x >= 10
                   clearInterval intervalId
-                  done()
+                  resolve()
               , 33
 
       foo = new Foo()
@@ -130,25 +131,25 @@ describe 'The', ->
       i = -1
       time = now()
       The
-      .then (done) ->
+      .then (resolve) ->
           expect(i).to.be.equal 0, 'then0'
           setTimeout ->
             expect(++i).to.be.equal 1, 'then0+'
-            done()
+            resolve()
           , 100
-      .then (done) ->
+      .then (resolve) ->
           expect(i).to.be.equal 1, 'then1'
           expect(now() - time).to.be.above 100
           setTimeout ->
             expect(++i).to.be.equal 2, 'then1+'
-            done()
+            resolve()
           , 100
-      .then (done) ->
+      .then (resolve) ->
           expect(i).to.be.equal 2, 'then2'
           expect(now() - time).to.be.above 200
           setTimeout ->
             expect(++i).to.be.equal 3, 'then2+'
-            done()
+            resolve()
           , 100
       .then ->
           expect(++i).to.be.equal 4, 'then4'
@@ -161,23 +162,23 @@ describe 'The', ->
       time = now()
       The
       .then([
-          (done) ->
+          (resolve) ->
             expect(i).to.be.equal 0
             setTimeout ->
               expect(++i).to.be.equal 3, 'then3'
-              done()
+              resolve()
             , 300
-        , (done) ->
+        , (resolve) ->
             expect(i).to.be.equal 0
             setTimeout ->
               expect(++i).to.be.equal 1, 'then1'
-              done()
+              resolve()
             , 100
-        , (done) ->
+        , (resolve) ->
             expect(i).to.be.equal 0
             setTimeout ->
               expect(++i).to.be.equal 2, 'then2'
-              done()
+              resolve()
             , 200
         ])
       .then ->
@@ -192,11 +193,11 @@ describe 'The', ->
       actors = []
       for j in [1..3]
         do (j) ->
-          actors.push (done) ->
+          actors.push (resolve) ->
             expect(i).to.be.equal 0
             setTimeout ->
               expect(++i).to.be.equal j
-              done()
+              resolve()
             , 100 * j
       actors = actors.reverse()
       The
@@ -238,34 +239,34 @@ describe 'The', ->
 
     it "should pass parameters to next runner", (done) ->
       The
-      .then (done) ->
-          done 'a', 'b'
-      .then (res, done) ->
+      .then (resolve) ->
+          resolve 'a', 'b'
+      .then (res, resolve) ->
           expect(res[0]).to.be.equal 'a'
           expect(res[1]).to.be.equal 'b'
 
           setTimeout ->
-            done 'c', 'd'
+            resolve 'c', 'd'
           , 10
       .then([
-          (res, done) ->
+          (res, resolve) ->
             expect(res[0]).to.be.equal 'c'
             expect(res[1]).to.be.equal 'd'
             setTimeout ->
-              done 'e', 'f'
+              resolve 'e', 'f'
             , 20
-        , (res, done) ->
+        , (res, resolve) ->
             expect(res[0]).to.be.equal 'c'
             expect(res[1]).to.be.equal 'd'
-            done 'g', 'h'
-        , (res, done) ->
+            resolve 'g', 'h'
+        , (res, resolve) ->
             expect(res[0]).to.be.equal 'c'
             expect(res[1]).to.be.equal 'd'
             setTimeout ->
-              done 'i', 'j'
+              resolve 'i', 'j'
             , 10
         ])
-      .then ([res0, res1, res2], done) ->
+      .then ([res0, res1, res2], resolve) ->
           expect(res0[0]).to.be.equal 'e'
           expect(res0[1]).to.be.equal 'f'
           expect(res1[0]).to.be.equal 'g'
@@ -274,7 +275,7 @@ describe 'The', ->
           expect(res2[1]).to.be.equal 'j'
 
           setTimeout ->
-            done 'k', 'l'
+            resolve 'k', 'l'
           , 10
       .then (res) ->
           expect(res[0]).to.be.equal 'k'
@@ -282,16 +283,16 @@ describe 'The', ->
 
           The
           .then([
-              (done) ->
+              (resolve) ->
                 setTimeout ->
-                  done 'm', 'n'
+                  resolve 'm', 'n'
                 , 20
-            , (done) ->
+            , (resolve) ->
                 setTimeout ->
-                  done 'o', 'p'
+                  resolve 'o', 'p'
                 , 10
-            , (done) ->
-                done 'q', 'r'
+            , (resolve) ->
+                resolve 'q', 'r'
             ])
       .then ([ res0, res1, res2 ]) ->
           expect(res0[0]).to.be.equal 'm'
@@ -302,16 +303,16 @@ describe 'The', ->
           expect(res2[1]).to.be.equal 'r'
           The
           .then([ (
-                    The.then (done) ->
-                      done 's', 't'
+                    The.then (resolve) ->
+                      resolve 's', 't'
                   ), (
-                    The.then (done) ->
+                    The.then (resolve) ->
                       setTimeout ->
-                        done 'u', 'v'
+                        resolve 'u', 'v'
                       , 10
                   ), (
-                    The.then (done) ->
-                      done 'x', 'y'
+                    The.then (resolve) ->
+                      resolve 'x', 'y'
                   ) ])
       .then ([ res0, res1, res2 ]) ->
           expect(res0[0]).to.be.equal 's'
@@ -324,17 +325,17 @@ describe 'The', ->
           The
           .then([
               ->
-                The.then (done) ->
+                The.then (resolve) ->
                   setTimeout ->
-                    done 'z', 'A'
+                    resolve 'z', 'A'
                   , 10
             , ->
-                The.then (done) ->
-                  done 'B', 'C'
+                The.then (resolve) ->
+                  resolve 'B', 'C'
             , ->
-                The.then (done) ->
+                The.then (resolve) ->
                   setTimeout ->
-                    done 'D', 'E'
+                    resolve 'D', 'E'
                   , 20
             ])
       .then ([ res0, res1, res2 ]) ->
@@ -362,8 +363,8 @@ describe 'The', ->
   describe '#pause()', ->
     it "should pause the flow", (done) ->
       the = The
-      .then (done) ->
-          setTimeout done, 200
+      .then (resolve) ->
+          setTimeout resolve, 200
       .then ->
           expect().fail()
       setTimeout ->
@@ -378,10 +379,10 @@ describe 'The', ->
 
     it "should call canceller", (done) ->
       the = The
-      .then (done) ->
+      .then (resolve) ->
           timeoutId = setTimeout ->
             expect().fail()
-            done()
+            resolve()
           , 200
           ->
             clearTimeout timeoutId
@@ -395,8 +396,8 @@ describe 'The', ->
   describe '#stop()', ->
     it "should pause and reset the flow", (done) ->
       the = The
-      .then (done) ->
-          setTimeout done, 200
+      .then (resolve) ->
+          setTimeout resolve, 200
       .then ->
           expect().fail()
       setTimeout ->
@@ -412,12 +413,12 @@ describe 'The', ->
       i = -1
       time = now()
       the = The
-      .then (done) ->
+      .then (resolve) ->
           expect(++i).to.be.equal 1
           expect(the.index).to.be.equal 0
           timeoutId = setTimeout ->
             expect(the.index).to.be.equal 0
-            done()
+            resolve()
           , 200
           ->
             expect(--i).to.be.equal 0
@@ -442,8 +443,8 @@ describe 'The', ->
   describe '#fail()', ->
     it "should be skipped when no error is thrown", (done) ->
       The
-      .then (done) ->
-          done 'a'
+      .then (resolve) ->
+          resolve 'a'
       .fail ->
           expect().fail()
       .then ([a]) ->
@@ -489,13 +490,13 @@ describe 'The', ->
     it "should run when catch error thrown in async actor", (done) ->
       i = -1
       The
-      .then (done) ->
-          done 'async1'
-      .then (message, done) ->
+      .then (resolve) ->
+          resolve 'async1'
+      .then (message, resolve) ->
           throw new Error message
           setTimeout ->
             expect().fail()
-            done()
+            resolve()
           , 100
       .fail (err) ->
           expect(++i).to.be.equal 0
@@ -520,15 +521,15 @@ describe 'The', ->
       i = -1
       The
       .then([
-          (done) ->
+          (resolve) ->
             throw new Error 'a'
             setTimeout ->
               expect().fail()
-              done()
+              resolve()
             , 100
-        , (done) ->
+        , (resolve) ->
             setTimeout ->
-              done()
+              resolve()
             , 200
         ])
       .fail (err) ->
@@ -542,9 +543,9 @@ describe 'The', ->
       .then ->
           throw new Error 'a'
           expect().fail()
-      .fail (err, done) ->
+      .fail (err, resolve) ->
           if err.message is 'a'
-            done 'b'
+            resolve 'b'
           else
             expect().fail()
       .then ([b]) ->

@@ -8,7 +8,7 @@ module.exports = (grunt) ->
         files: [
           'src/zazen.coffee'
         ]
-        tasks: [ 'main' ]
+        tasks: [ 'coffee' ]
       jquerize:
         files: [
           'src/jquerize.coffee'
@@ -22,8 +22,6 @@ module.exports = (grunt) ->
 
     coffee:
       main:
-#        options:
-#          bare: true
         files:
           'zazen.js': [ 'src/zazen.coffee' ]
       jquerize:
@@ -75,8 +73,7 @@ module.exports = (grunt) ->
     'watch'
   ]
   grunt.registerTask 'run', [
-    'main'
-    'jquerize'
+    'coffee'
     'doc'
   ]
   grunt.registerTask 'main', [
