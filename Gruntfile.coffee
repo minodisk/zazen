@@ -14,11 +14,6 @@ module.exports = (grunt) ->
           'src/jquerize.coffee'
         ]
         tasks: [ 'jquerize' ]
-      docs:
-        files: [
-          'docs-src/**/*.coffee'
-        ]
-        tasks: [ 'docs' ]
 
     coffee:
       main:
@@ -29,10 +24,6 @@ module.exports = (grunt) ->
           join: true
         files:
           'jquery.zazen.js': [ 'src/zazen.coffee', 'src/jquerize.coffee' ]
-
-    docco:
-      docs:
-        src: [ 'docs-src/**/*.coffee' ]
 
     bump:
       options:
@@ -53,7 +44,6 @@ module.exports = (grunt) ->
 
   grunt.loadNpmTasks 'grunt-contrib-watch'
   grunt.loadNpmTasks 'grunt-contrib-coffee'
-  grunt.loadNpmTasks 'grunt-docco'
   grunt.loadNpmTasks 'grunt-bump'
   grunt.loadNpmTasks 'grunt-release'
 
@@ -69,9 +59,6 @@ module.exports = (grunt) ->
   ]
   grunt.registerTask 'jquerize', [
     'coffee:jquerize'
-  ]
-  grunt.registerTask 'docs', [
-    'docco:docs'
   ]
   grunt.registerTask 'publish', [
     'bump'
