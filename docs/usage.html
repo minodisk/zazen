@@ -2,161 +2,151 @@
 
 <html>
 <head>
-  <title>usage.coffee</title>
+  <title>Zazen</title>
   <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-  <meta name="viewport" content="width=device-width, target-densitydpi=160dpi, initial-scale=1.0; maximum-scale=1.0; user-scalable=0;">
+  <link rel="stylesheet" media="all" href="public/stylesheets/normalize.css" />
   <link rel="stylesheet" media="all" href="docco.css" />
 </head>
 <body>
-  <div id="container">
-    <div id="background"></div>
-    
-    <ul class="sections">
-        
-          <li id="title">
-              <div class="annotation">
-                  <h1>usage.coffee</h1>
-              </div>
-          </li>
-        
-        
-        
-        <li id="section-1">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-1">&#182;</a>
-              </div>
-              <p>Set the context of all process in the flow</p>
+  <div class="container">
+    <div class="page">
 
-            </div>
-            
-            <div class="content"><div class='highlight'><pre>The({ <span class="hljs-attribute">i</span>: <span class="hljs-number">0</span> })</pre></div></div>
-            
-        </li>
+      <div class="header">
         
-        
-        <li id="section-2">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-2">&#182;</a>
-              </div>
-              <p>Runs synchronously when the process is function that doesn’t have the argument named ‘done’.</p>
+          
+          <h1 id="zazen">Zazen</h1>
+<p>zazenはあなたのコードをreadableにします。
+zazenは<code>The</code>と<code>then</code>その他の少しのキーワードで構成される、asynchronous processをchainするライブラリです。</p>
 
-            </div>
-            
-            <div class="content"><div class='highlight'><pre>.<span class="hljs-keyword">then</span><span class="hljs-function"> -&gt;</span>
-  <span class="hljs-property">@i</span> += <span class="hljs-number">1</span>
-  <span class="hljs-built_in">console</span>.log <span class="hljs-property">@i</span> <span class="hljs-comment">#=&gt; 1</span></pre></div></div>
-            
-        </li>
+          
         
-        
-        <li id="section-3">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-3">&#182;</a>
-              </div>
-              <p>Runs asynchronously when the process is function that doesn’t have the argument named ‘done’.
-The flow waits going to the next step till <code>done()</code> is called.</p>
 
-            </div>
-            
-            <div class="content"><div class='highlight'><pre>.<span class="hljs-keyword">then</span> <span class="hljs-function"><span class="hljs-params">(done)</span> -&gt;</span>
-  setTimeout<span class="hljs-function"> -&gt;</span>
-    done()
-  , <span class="hljs-number">1000</span></pre></div></div>
-            
-        </li>
         
-        
-        <li id="section-4">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-4">&#182;</a>
-              </div>
-              <p>Pass value to the next step when done is called with parameter</p>
+      </div>
 
-            </div>
-            
-            <div class="content"><div class='highlight'><pre>.<span class="hljs-keyword">then</span> <span class="hljs-function"><span class="hljs-params">(done)</span> -&gt;</span>
-  done <span class="hljs-number">2</span>
-.<span class="hljs-keyword">then</span> <span class="hljs-function"><span class="hljs-params">(value)</span> -&gt;</span>
-  <span class="hljs-property">@i</span> += value
-  <span class="hljs-built_in">console</span>.log <span class="hljs-property">@i</span> <span class="hljs-comment">#=&gt; 3</span></pre></div></div>
-            
-        </li>
+      
         
-        
-        <li id="section-5">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-5">&#182;</a>
-              </div>
-              <p>Runs parallely when process is array of function.
-The flow waits for every process is done.</p>
+        <h2 id="include">Include</h2>
+<p>Node</p>
 
-            </div>
-            
-            <div class="content"><div class='highlight'><pre>.<span class="hljs-keyword">then</span>([
-    <span class="hljs-function"><span class="hljs-params">(done)</span> -&gt;</span>
-        <span class="hljs-property">@i</span> += <span class="hljs-number">3</span>
-        setTimeout<span class="hljs-function"> -&gt;</span>
-          done()
-        , <span class="hljs-number">1000</span>
-  ,<span class="hljs-function"> -&gt;</span>
-        <span class="hljs-property">@i</span> += <span class="hljs-number">5</span>
-])
-.<span class="hljs-keyword">then</span><span class="hljs-function"> -&gt;</span>
-  <span class="hljs-built_in">console</span>.log <span class="hljs-property">@i</span> <span class="hljs-comment">#=&gt; 11</span></pre></div></div>
-            
-        </li>
         
+          <div class='highlight'><pre>
+<span class="hljs-keyword">var</span> zazen = <span class="hljs-built_in">require</span>(<span class="hljs-string">'../zazen'</span>)
+  , The = zazen.The
+  ;</pre></div>
         
-        <li id="section-6">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-6">&#182;</a>
-              </div>
-              <p>When error is thrown in an process, flow will catch the error and jumps to ‘fail’ process.</p>
+      
+        
+        <p>browser</p>
+<ul>
+<li>standalone<pre><code class="lang-html"><span class="hljs-tag">&lt;<span class="hljs-title">script</span> <span class="hljs-attribute">src</span>=<span class="hljs-value">"path/to/zazen.js"</span>&gt;</span><span class="javascript">
+&lt;script&gt;
+<span class="hljs-keyword">var</span> The = zazen.The;
+</span><span class="hljs-tag">&lt;/<span class="hljs-title">script</span>&gt;</span>
+</code></pre>
+</li>
+<li>with jQuery<pre><code class="lang-html"><span class="hljs-tag">&lt;<span class="hljs-title">script</span> <span class="hljs-attribute">src</span>=<span class="hljs-value">"path/to/jquery.js"</span>&gt;</span><span class="javascript">
+&lt;script src=<span class="hljs-string">"path/to/jquery.zazen.js"</span>&gt;
+<span class="xml"><span class="hljs-tag">&lt;<span class="hljs-title">script</span>&gt;</span><span class="javascript">
+<span class="hljs-keyword">var</span> The = zazen.The;
+</span></span></span><span class="hljs-tag">&lt;/<span class="hljs-title">script</span>&gt;</span>
+</code></pre>
+</li>
+</ul>
 
-            </div>
-            
-            <div class="content"><div class='highlight'><pre>.<span class="hljs-keyword">then</span><span class="hljs-function"> -&gt;</span>
-  <span class="hljs-keyword">if</span> <span class="hljs-property">@i</span> &gt; <span class="hljs-number">10</span>
-    <span class="hljs-keyword">throw</span> <span class="hljs-string">'i is over 10'</span>
-.<span class="hljs-keyword">then</span><span class="hljs-function"> -&gt;</span>
-  <span class="hljs-string">"this process won't be called"</span>
-.fail <span class="hljs-function"><span class="hljs-params">(err, done)</span> -&gt;</span>
-  alert <span class="hljs-string">'fail'</span></pre></div></div>
-            
-        </li>
         
+      
         
-        <li id="section-7">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-7">&#182;</a>
-              </div>
-              <p>When <code>done()</code> is called in fail process, flow will recover from the ‘fail’ process to next ‘then’ process</p>
+        <h2 id="escape-from-callback-hell">Escape from callback hell</h2>
 
-            </div>
-            
-            <div class="content"><div class='highlight'><pre>  <span class="hljs-property">@i</span> -= <span class="hljs-number">4</span>
-  <span class="hljs-keyword">if</span> <span class="hljs-property">@i</span> &lt; <span class="hljs-number">10</span>
-    done()
-.<span class="hljs-keyword">then</span><span class="hljs-function"> -&gt;</span>
-  <span class="hljs-built_in">console</span>.log <span class="hljs-property">@i</span> <span class="hljs-comment">#=&gt; 7</span></pre></div></div>
-            
-        </li>
         
-    </ul>
+          <div class='highlight'><pre>
+<span class="hljs-keyword">var</span> wait = <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">(duration, callback)</span> {</span>
+    setTimeout(callback, duration);
+  }
+  ;
+wait(<span class="hljs-number">1000</span>, <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">()</span> {</span>
+  console.log(<span class="hljs-number">1</span>);
+  wait(<span class="hljs-number">1000</span>, <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">()</span> {</span>
+    console.log(<span class="hljs-number">2</span>);
+    wait(<span class="hljs-number">1000</span>, <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">()</span> {</span>
+      console.log(<span class="hljs-number">3</span>);
+    });
+  });
+});</pre></div>
+        
+      
+        
+        <p>コールバックで書く非同期処理はネストでreadabilityを失います。
+zazenで見通しの良いコードにしましょう。</p>
+
+        
+          <div class='highlight'><pre>The
+  .wait(<span class="hljs-number">1000</span>)
+  .then(<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">()</span> {</span>
+    console.log(<span class="hljs-number">1</span>);
+  })
+  .wait(<span class="hljs-number">1000</span>)
+  .then(<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">()</span> {</span>
+    console.log(<span class="hljs-number">2</span>);
+  })
+  .wait(<span class="hljs-number">1000</span>)
+  .then(<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">()</span> {</span>
+    console.log(<span class="hljs-number">3</span>);
+  });</pre></div>
+        
+      
+        
+        <h2 id="run-tasks-serially">Run tasks serially</h2>
+
+        
+      
+        
+        <h2 id="run-tasks-parallely">Run tasks parallely</h2>
+
+        
+      
+        
+        <h2 id="handle-errors">Handle errors</h2>
+
+        
+      
+        
+        <h2 id="recover-error">Recover error</h2>
+
+        
+      
+        
+        <h2 id="pomisify">Pomisify</h2>
+
+        
+          <div class='highlight'><pre><span class="hljs-keyword">var</span> promisify = zazen.promisify
+  , fs = promisify(<span class="hljs-built_in">require</span>(<span class="hljs-string">'fs'</span>))
+  , httpGet = promisify(<span class="hljs-built_in">require</span>(<span class="hljs-string">'http'</span>).get)
+  ;</pre></div>
+        
+      
+        
+        <h2 id="use-with-underscore-or-lo-dash">Use with underscore or lo-dash</h2>
+
+        
+          <div class='highlight'><pre>The
+  .parallel(_.map([<span class="hljs-string">'data/a.json'</span>, <span class="hljs-string">'data/b.json'</span>, <span class="hljs-string">'data/c.json'</span>], fs.readFile))
+  .then(_.map, <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">(json)</span> {</span>
+    <span class="hljs-keyword">return</span> <span class="hljs-built_in">JSON</span>.parse(json);
+  })
+  .then(<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">(objects)</span> {</span>
+    console.log(objects);
+  });</pre></div>
+        
+      
+        
+        <h2 id="distributions">distributions</h2>
+
+        
+      
+      <div class="fleur">h</div>
+    </div>
   </div>
 </body>
 </html>
