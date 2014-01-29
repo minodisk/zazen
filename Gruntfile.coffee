@@ -74,7 +74,6 @@ module.exports = (grunt) ->
   ]
   grunt.registerTask 'run', [
     'coffee'
-    'doc'
   ]
   grunt.registerTask 'main', [
     'coffee:main'
