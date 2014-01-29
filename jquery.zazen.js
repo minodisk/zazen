@@ -1,5 +1,5 @@
 (function() {
-  var FailTask, Klass, The, bind, createActor, createId, createTask, defer, exports, getArgumentNames, indexOf, isArray, isFunction, toString, _ref,
+  var FailTask, Klass, The, bind, createActor, createId, createTask, defer, exports, getArgNames, indexOf, isArray, isFunction, toString, _ref,
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
     __slice = [].slice;
@@ -73,7 +73,7 @@
     return setTimeout(callback, 0);
   };
 
-  getArgumentNames = (function() {
+  getArgNames = (function() {
     var rArgument, rComment;
     rArgument = /\(([\s\S]*?)\)/;
     rComment = /\/\/.*$|\/\*[\s\S]*?\*\/|\s/gm;
@@ -400,7 +400,7 @@
   })(), createTask = _ref.createTask, FailTask = _ref.FailTask;
 
   createActor = (function() {
-    var Actor, AsyncActor, SyncActor, TheActor;
+    var Actor, AsyncActor, FailActor, TheActor;
     Actor = (function(_super) {
       __extends(Actor, _super);
 
@@ -414,16 +414,11 @@
         Actor.__super__.constructor.call(this);
       }
 
-      Actor.prototype.run = function(prevArgs, onResolved, onRejected) {
+      Actor.prototype.run = function() {
         var _ref1;
         if (The.verbose) {
-          ((_ref1 = typeof console !== "undefined" && console !== null ? console.log : void 0) != null ? _ref1 : alert)("" + (this.toVerboseString()) + "#run");
+          return ((_ref1 = typeof console !== "undefined" && console !== null ? console.log : void 0) != null ? _ref1 : alert)("" + (this.toVerboseString()) + "#run");
         }
-        return this.runner(prevArgs, function() {
-          var args;
-          args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
-          return onResolved(args);
-        });
       };
 
       Actor.prototype.cancel = function() {
@@ -448,22 +443,44 @@
 
       AsyncActor.prototype.name = 'AsyncActor';
 
-      function AsyncActor(runner, context, argNames) {
-        this.argNames = argNames;
+      function AsyncActor(runner, context) {
         AsyncActor.__super__.constructor.call(this, runner, context);
       }
 
       AsyncActor.prototype.run = function(prevArgs, onResolved, onRejected) {
-        var args,
+        var argNames, args, rejectIndex, resolveIndex,
           _this = this;
+        AsyncActor.__super__.run.call(this);
+        argNames = getArgNames(this.runner);
+        resolveIndex = indexOf(argNames, 'resolve');
+        rejectIndex = indexOf(argNames, 'reject');
         args = [prevArgs];
-        args[indexOf(this.argNames, 'resolve')] = function() {
-          var args;
-          args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
-          return onResolved(args);
-        };
-        args[indexOf(this.argNames, 'reject')] = onRejected;
-        return this.timeoutId = defer(function() {
+        if (resolveIndex !== -1) {
+          args[resolveIndex] = function() {
+            var args;
+            args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
+            return onResolved(args);
+          };
+        }
+        if (rejectIndex !== -1) {
+          args[rejectIndex] = onRejected;
+        }
+        return this.timeoutId = resolveIndex === -1 ? defer(function() {
+          var err, returns;
+          try {
+            returns = _this.runner.apply(_this.context, args);
+          } catch (_error) {
+            err = _error;
+            onRejected(err);
+          }
+          if (returns instanceof The) {
+            return new TheActor(returns).run(prevArgs, onResolved, onRejected);
+          } else {
+            if (!(_this instanceof FailActor)) {
+              return onResolved();
+            }
+          }
+        }) : defer(function() {
           var err;
           try {
             return _this.canceller = _this.runner.apply(_this.context, args);
@@ -477,39 +494,18 @@
       return AsyncActor;
 
     })(Actor);
-    SyncActor = (function(_super) {
-      __extends(SyncActor, _super);
+    FailActor = (function(_super) {
+      __extends(FailActor, _super);
 
-      SyncActor.prototype.name = 'SyncActor';
+      FailActor.prototype.name = 'FailActor';
 
-      function SyncActor(runner, context, argNames, isFail) {
-        this.isFail = isFail != null ? isFail : false;
-        SyncActor.__super__.constructor.call(this, runner, context);
+      function FailActor(runner, context) {
+        FailActor.__super__.constructor.call(this, runner, context);
       }
 
-      SyncActor.prototype.run = function(prevArgs, onResolved, onRejected) {
-        var _this = this;
-        return this.timeoutId = defer(function() {
-          var err, returns;
-          try {
-            returns = _this.runner.call(_this.context, prevArgs);
-          } catch (_error) {
-            err = _error;
-            onRejected(err);
-          }
-          if (returns instanceof The) {
-            return new TheActor(returns).run(prevArgs, onResolved, onRejected);
-          } else {
-            if (!_this.isFail) {
-              return onResolved();
-            }
-          }
-        });
-      };
+      return FailActor;
 
-      return SyncActor;
-
-    })(Actor);
+    })(AsyncActor);
     TheActor = (function(_super) {
       __extends(TheActor, _super);
 
@@ -532,7 +528,6 @@
 
     })(Actor);
     return function(runner, context, isFail) {
-      var argNames;
       if (isFail == null) {
         isFail = false;
       }
@@ -541,11 +536,10 @@
       } else if (runner instanceof The) {
         return new TheActor(runner);
       } else if (isFunction(runner)) {
-        argNames = getArgumentNames(runner);
-        if (indexOf(argNames, 'resolve') === -1) {
-          return new SyncActor(runner, context, argNames, isFail);
+        if (isFail) {
+          return new FailActor(runner, context);
         } else {
-          return new AsyncActor(runner, context, argNames);
+          return new AsyncActor(runner, context);
         }
       } else {
         throw new TypeError("runner must be specified as `The` instance or `function`");

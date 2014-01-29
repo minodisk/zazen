@@ -482,98 +482,247 @@
     });
     return describe('#fail()', function() {
       it("should be skipped when no error is thrown", function(done) {
-        return The.then(function(resolve) {
-          return resolve('a');
-        }).fail(function() {
-          return expect().fail();
-        }).then(function(_arg) {
+        var error, i;
+        i = 0;
+        error = new Error('exception');
+        return The.then(function() {
+          return expect(++i).to.be.equal(1);
+        }).then(function(resolve) {
+          expect(++i).to.be.equal(2);
+          if (false) {
+            throw error;
+          } else {
+            return resolve('a');
+          }
+        }).then(function(_arg, resolve) {
           var a;
           a = _arg[0];
+          expect(++i).to.be.equal(3);
           expect(a).to.be.equal('a');
+          return resolve('b');
+        }).fail(function() {
+          ++i;
+          return expect().fail();
+        }).then(function(_arg) {
+          var b;
+          b = _arg[0];
+          expect(++i).to.be.equal(4);
+          expect(b).to.be.equal('b');
           return done();
         });
       });
-      it("should be stop the flow when error is thrown", function(done) {
-        The.then(function() {
-          throw new Error('');
-          return expect().fail(0);
-        }).then(function() {
-          return expect().fail(1);
-        }).fail(function() {
-          return '';
-        }).then(function() {
-          return expect().fail(3);
-        });
-        return setTimeout(done, 300);
-      });
-      it("should run when catch error thrown", function(done) {
+      it("should be skipped when reject isn't called", function(done) {
         var error, i;
-        i = -1;
-        error = new Error('a');
+        i = 0;
+        error = 'exception';
         return The.then(function() {
-          throw error;
+          return expect(++i).to.be.equal(1);
+        }).then(function(resolve, reject) {
+          expect(++i).to.be.equal(2);
+          if (false) {
+            return reject(error);
+          } else {
+            return resolve('a');
+          }
+        }).then(function(_arg, resolve) {
+          var a;
+          a = _arg[0];
+          expect(++i).to.be.equal(3);
+          expect(a).to.be.equal('a');
+          return resolve('b');
+        }).fail(function() {
+          ++i;
+          return expect().fail();
+        }).then(function(_arg) {
+          var b;
+          b = _arg[0];
+          expect(++i).to.be.equal(4);
+          expect(b).to.be.equal('b');
+          return done();
+        });
+      });
+      it("should run when an error is thrown", function(done) {
+        var error, i;
+        i = 0;
+        error = new Error('exception');
+        return The.then(function() {
+          return expect(++i).to.be.equal(1);
+        }).then(function(resolve) {
+          expect(++i).to.be.equal(2);
+          if (true) {
+            throw error;
+          } else {
+            return resolve('a');
+          }
+        }).then(function(_arg, resolve) {
+          var a;
+          a = _arg[0];
+          ++i;
+          expect().fail();
+          return resolve('b');
         }).fail(function(err) {
-          expect(++i).to.be.equal(0);
           expect(err).to.be.equal(error);
           return done();
+        }).then(function(_arg) {
+          var b;
+          b = _arg[0];
+          ++i;
+          expect().fail();
+          return done();
         });
       });
-      it("should run when catch object thrown", function(done) {
-        var i, obj;
-        i = -1;
-        obj = {};
+      it("should run when reject is called", function(done) {
+        var error, i;
+        i = 0;
+        error = 'exception';
         return The.then(function() {
-          throw obj;
-          return expect().fail();
-        }).fail(function(err) {
-          expect(++i).to.be.equal(0);
-          expect(err).to.be.equal(obj);
-          return done();
-        });
-      });
-      it("should run when catch error thrown in async actor", function(done) {
-        var i;
-        i = -1;
-        return The.then(function(resolve) {
-          return resolve('async1');
+          return expect(++i).to.be.equal(1);
+        }).then(function(resolve, reject) {
+          expect(++i).to.be.equal(2);
+          if (true) {
+            return reject(error);
+          } else {
+            return resolve('a');
+          }
         }).then(function(_arg, resolve) {
-          var message;
-          message = _arg[0];
-          throw new Error(message);
-          return setTimeout(function() {
-            expect().fail();
-            return resolve();
-          }, 100);
+          var a;
+          a = _arg[0];
+          ++i;
+          expect().fail();
+          return resolve('b');
         }).fail(function(err) {
-          expect(++i).to.be.equal(0);
-          expect(err.message).to.be.equal('async1');
+          expect(err).to.be.equal(error);
+          return done();
+        }).then(function(_arg) {
+          var b;
+          b = _arg[0];
+          ++i;
+          expect().fail();
           return done();
         });
       });
-      it("should run when catch error in parallel actors", function(done) {
-        var i;
+      it("should run when a object is thrown", function(done) {
+        var error, i;
+        i = 0;
+        error = {};
+        return The.then(function() {
+          return expect(++i).to.be.equal(1);
+        }).then(function(resolve) {
+          expect(++i).to.be.equal(2);
+          if (true) {
+            throw error;
+          } else {
+            return resolve('a');
+          }
+        }).then(function(_arg, resolve) {
+          var a;
+          a = _arg[0];
+          ++i;
+          expect().fail();
+          return resolve('b');
+        }).fail(function(err) {
+          expect(err).to.be.equal(error);
+          return done();
+        }).then(function(_arg) {
+          var b;
+          b = _arg[0];
+          ++i;
+          expect().fail();
+          return done();
+        });
+      });
+      it("should be skipped when an error is thrown asynchronously", function(done) {
+        var error, i;
+        i = 0;
+        error = new Error('exception');
+        return The.then(function() {
+          return expect(++i).to.be.equal(1);
+        }).then(function(resolve) {
+          expect(++i).to.be.equal(2);
+          return setTimeout(function() {
+            if (false) {
+              throw error;
+            } else {
+              return resolve('a');
+            }
+          }, 100);
+        }).then(function(_arg, resolve) {
+          var a;
+          a = _arg[0];
+          expect(++i).to.be.equal(3);
+          expect(a).to.be.equal('a');
+          return resolve('b');
+        }).fail(function() {
+          ++i;
+          return expect().fail();
+        }).then(function(_arg) {
+          var b;
+          b = _arg[0];
+          expect(++i).to.be.equal(4);
+          expect(b).to.be.equal('b');
+          return done();
+        });
+      });
+      it("should run when reject is called asynchronously", function(done) {
+        var error, i;
+        i = 0;
+        error = 'exception';
+        return The.then(function() {
+          return expect(++i).to.be.equal(1);
+        }).then(function(resolve, reject) {
+          expect(++i).to.be.equal(2);
+          return setTimeout(function() {
+            if (true) {
+              return reject(error);
+            } else {
+              return resolve('a');
+            }
+          }, 100);
+        }).then(function(_arg, resolve) {
+          var a;
+          a = _arg[0];
+          ++i;
+          expect().fail();
+          return resolve('b');
+        }).fail(function(err) {
+          expect(err).to.be.equal(error);
+          return done();
+        }).then(function(_arg) {
+          var b;
+          b = _arg[0];
+          ++i;
+          expect().fail();
+          return done();
+        });
+      });
+      it("should run when an error is thrown in parallel actors", function(done) {
+        var error, i;
         i = -1;
+        error = new Error('exception');
         return The.then([
           function() {
-            throw new Error('a');
+            throw error;
           }, function() {
             return '';
           }
         ]).fail(function(err) {
           expect(++i).to.be.equal(0);
-          expect(err.message).to.be.equal('a');
+          expect(err).to.be.equal(error);
           return done();
         });
       });
-      it("should run when catch error in async parallel actors", function(done) {
-        var i;
+      it("should run when reject is called asynchronously in parallel actors", function(done) {
+        var error, i;
         i = -1;
+        error = 'exception';
         The.then([
-          function(resolve) {
-            throw new Error('a');
+          function(resolve, reject) {
             return setTimeout(function() {
-              expect().fail();
-              return resolve();
+              if (true) {
+                return reject(error);
+              } else {
+                return resolve('a');
+              }
             }, 100);
           }, function(resolve) {
             return setTimeout(function() {
@@ -582,16 +731,16 @@
           }
         ]).fail(function(err) {
           expect(++i).to.be.equal(0);
-          return expect(err.message).to.be.equal('a');
+          return expect(err).to.be.equal(error);
         });
         return setTimeout(done, 300);
       });
-      return it("should be able to recover the flow when done is called", function(done) {
+      it("should recover the flow when resolve is called in fail runner", function(done) {
         return The.then(function() {
           throw new Error('a');
           return expect().fail();
         }).fail(function(err, resolve) {
-          if (err.message === 'a') {
+          if (true) {
             return resolve('b');
           } else {
             return expect().fail();
@@ -600,6 +749,73 @@
           var b;
           b = _arg[0];
           expect(b).to.be.equal('b');
+          return done();
+        });
+      });
+      it("should recover the flow when resolve is called in fail runner asynchronously", function(done) {
+        return The.then(function() {
+          throw new Error('a');
+          return expect().fail();
+        }).fail(function(err, resolve) {
+          return setTimeout(function() {
+            if (true) {
+              return resolve('b');
+            } else {
+              return expect().fail();
+            }
+          }, 100);
+        }).then(function(_arg) {
+          var b;
+          b = _arg[0];
+          expect(b).to.be.equal('b');
+          return done();
+        });
+      });
+      it("should step to the next fail when reject is called in fail runner", function(done) {
+        var error;
+        error = new Error('a');
+        return The.then(function() {
+          throw error;
+          return expect().fail();
+        }).fail(function(err, reject) {
+          if (false) {
+            return expect().fail();
+          } else {
+            return reject(err);
+          }
+        }).then(function() {
+          return expect().fail();
+        }).fail(function(err, resolve) {
+          expect(err).to.be.equal(error);
+          return resolve('b');
+        }).then(function(_arg) {
+          var b;
+          b = _arg[0];
+          expect(b).to.be.equal(b);
+          return done();
+        });
+      });
+      return it("should step to the next fail when reject is called in fail runner asynchronously", function(done) {
+        var error;
+        error = new Error('a');
+        return The.then(function() {
+          throw error;
+          return expect().fail();
+        }).fail(function(err, reject) {
+          if (false) {
+            return expect().fail();
+          } else {
+            return reject(err);
+          }
+        }).then(function() {
+          return expect().fail();
+        }).fail(function(err, resolve) {
+          expect(err).to.be.equal(error);
+          return resolve('b');
+        }).then(function(_arg) {
+          var b;
+          b = _arg[0];
+          expect(b).to.be.equal(b);
           return done();
         });
       });

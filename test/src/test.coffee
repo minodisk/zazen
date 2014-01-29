@@ -442,90 +442,203 @@ describe 'The', ->
 
   describe '#fail()', ->
     it "should be skipped when no error is thrown", (done) ->
+      i = 0
+      error = new Error 'exception'
       The
+      .then ->
+          expect(++i).to.be.equal 1
       .then (resolve) ->
-          resolve 'a'
-      .fail ->
-          expect().fail()
-      .then ([a]) ->
+          expect(++i).to.be.equal 2
+          if false
+            throw error
+          else
+            resolve 'a'
+      .then ([a], resolve) ->
+          expect(++i).to.be.equal 3
           expect(a).to.be.equal 'a'
+          resolve 'b'
+      .fail ->
+          ++i
+          expect().fail()
+      .then ([b]) ->
+          expect(++i).to.be.equal 4
+          expect(b).to.be.equal 'b'
           done()
 
-    it "should be stop the flow when error is thrown", (done) ->
+    it "should be skipped when reject isn't called", (done) ->
+      i = 0
+      error = 'exception'
       The
       .then ->
-          throw new Error ''
-          expect().fail(0)
-      .then ->
-          expect().fail(1)
+          expect(++i).to.be.equal 1
+      .then (resolve, reject) ->
+          expect(++i).to.be.equal 2
+          if false
+            reject error
+          else
+            resolve 'a'
+      .then ([a], resolve) ->
+          expect(++i).to.be.equal 3
+          expect(a).to.be.equal 'a'
+          resolve 'b'
       .fail ->
-          ''
-      .then ->
-          expect().fail(3)
-      setTimeout done, 300
+          ++i
+          expect().fail()
+      .then ([b]) ->
+          expect(++i).to.be.equal 4
+          expect(b).to.be.equal 'b'
+          done()
 
-    it "should run when catch error thrown", (done) ->
-      i = -1
-      error = new Error 'a'
+    it "should run when an error is thrown", (done) ->
+      i = 0
+      error = new Error 'exception'
       The
       .then ->
-          throw error
+          expect(++i).to.be.equal 1
+      .then (resolve) ->
+          expect(++i).to.be.equal 2
+          if true
+            throw error
+          else
+            resolve 'a'
+      .then ([a], resolve) ->
+          ++i
+          expect().fail()
+          resolve 'b'
       .fail (err) ->
-          expect(++i).to.be.equal 0
           expect(err).to.be.equal error
           done()
+      .then ([b]) ->
+          ++i
+          expect().fail()
+          done()
 
-    it "should run when catch object thrown", (done) ->
-      i = -1
-      obj = {}
+    it "should run when reject is called", (done) ->
+      i = 0
+      error = 'exception'
       The
       .then ->
-          throw obj
+          expect(++i).to.be.equal 1
+      .then (resolve, reject) ->
+          expect(++i).to.be.equal 2
+          if true
+            reject error
+          else
+            resolve 'a'
+      .then ([a], resolve) ->
+          ++i
           expect().fail()
+          resolve 'b'
       .fail (err) ->
-          expect(++i).to.be.equal 0
-          expect(err).to.be.equal obj
+          expect(err).to.be.equal error
+          done()
+      .then ([b]) ->
+          ++i
+          expect().fail()
           done()
 
-    it "should run when catch error thrown in async actor", (done) ->
-      i = -1
+    it "should run when a object is thrown", (done) ->
+      i = 0
+      error = {}
       The
+      .then ->
+          expect(++i).to.be.equal 1
       .then (resolve) ->
-          resolve 'async1'
-      .then ([message], resolve) ->
-          throw new Error message
-          setTimeout ->
-            expect().fail()
-            resolve()
-          , 100
+          expect(++i).to.be.equal 2
+          if true
+            throw error
+          else
+            resolve 'a'
+      .then ([a], resolve) ->
+          ++i
+          expect().fail()
+          resolve 'b'
       .fail (err) ->
-          expect(++i).to.be.equal 0
-          expect(err.message).to.be.equal 'async1'
+          expect(err).to.be.equal error
+          done()
+      .then ([b]) ->
+          ++i
+          expect().fail()
           done()
 
-    it "should run when catch error in parallel actors", (done) ->
+    it "should be skipped when an error is thrown asynchronously", (done) ->
+      i = 0
+      error = new Error 'exception'
+      The
+      .then ->
+          expect(++i).to.be.equal 1
+      .then (resolve) ->
+          expect(++i).to.be.equal 2
+          setTimeout ->
+            if false
+              throw error
+            else
+              resolve 'a'
+          , 100
+      .then ([a], resolve) ->
+          expect(++i).to.be.equal 3
+          expect(a).to.be.equal 'a'
+          resolve 'b'
+      .fail ->
+          ++i
+          expect().fail()
+      .then ([b]) ->
+          expect(++i).to.be.equal 4
+          expect(b).to.be.equal 'b'
+          done()
+
+    it "should run when reject is called asynchronously", (done) ->
+      i = 0
+      error = 'exception'
+      The
+      .then ->
+          expect(++i).to.be.equal 1
+      .then (resolve, reject) ->
+          expect(++i).to.be.equal 2
+          setTimeout ->
+            if true
+              reject error
+            else
+              resolve 'a'
+          , 100
+      .then ([a], resolve) ->
+          ++i
+          expect().fail()
+          resolve 'b'
+      .fail (err) ->
+          expect(err).to.be.equal error
+          done()
+      .then ([b]) ->
+          ++i
+          expect().fail()
+          done()
+
+    it "should run when an error is thrown in parallel actors", (done) ->
       i = -1
+      error = new Error 'exception'
       The
       .then([
           ->
-            throw new Error 'a'
+            throw error
         , ->
             ''
         ])
       .fail (err) ->
           expect(++i).to.be.equal 0
-          expect(err.message).to.be.equal 'a'
+          expect(err).to.be.equal error
           done()
 
-    it "should run when catch error in async parallel actors", (done) ->
+    it "should run when reject is called asynchronously in parallel actors", (done) ->
       i = -1
+      error = 'exception'
       The
       .then([
-          (resolve) ->
-            throw new Error 'a'
+          (resolve, reject) ->
             setTimeout ->
-              expect().fail()
-              resolve()
+              if true
+                reject error
+              else
+                resolve 'a'
             , 100
         , (resolve) ->
             setTimeout ->
@@ -534,20 +647,76 @@ describe 'The', ->
         ])
       .fail (err) ->
           expect(++i).to.be.equal 0
-          expect(err.message).to.be.equal 'a'
+          expect(err).to.be.equal error
 
       setTimeout done, 300
 
-    it "should be able to recover the flow when done is called", (done) ->
+    it "should recover the flow when resolve is called in fail runner", (done) ->
       The
       .then ->
           throw new Error 'a'
           expect().fail()
       .fail (err, resolve) ->
-          if err.message is 'a'
+          if true
             resolve 'b'
           else
             expect().fail()
       .then ([b]) ->
           expect(b).to.be.equal 'b'
+          done()
+
+    it "should recover the flow when resolve is called in fail runner asynchronously", (done) ->
+      The
+      .then ->
+          throw new Error 'a'
+          expect().fail()
+      .fail (err, resolve) ->
+          setTimeout ->
+            if true
+              resolve 'b'
+            else
+              expect().fail()
+          , 100
+      .then ([b]) ->
+          expect(b).to.be.equal 'b'
+          done()
+
+    it "should step to the next fail when reject is called in fail runner", (done) ->
+      error = new Error 'a'
+      The
+      .then ->
+          throw error
+          expect().fail()
+      .fail (err, reject) ->
+          if false
+            expect().fail()
+          else
+            reject err
+      .then ->
+          expect().fail()
+      .fail (err, resolve) ->
+          expect(err).to.be.equal error
+          resolve 'b'
+      .then ([b]) ->
+          expect(b).to.be.equal b
+          done()
+
+    it "should step to the next fail when reject is called in fail runner asynchronously", (done) ->
+      error = new Error 'a'
+      The
+      .then ->
+          throw error
+          expect().fail()
+      .fail (err, reject) ->
+          if false
+            expect().fail()
+          else
+            reject err
+      .then ->
+          expect().fail()
+      .fail (err, resolve) ->
+          expect(err).to.be.equal error
+          resolve 'b'
+      .then ([b]) ->
+          expect(b).to.be.equal b
           done()

@@ -37,7 +37,7 @@ createId = do ->
     hash
 defer = (callback) ->
   setTimeout callback, 0
-getArgumentNames = do ->
+getArgNames = do ->
   rArgument = ///
 \(([\s\S]*?)\)
 ///
@@ -265,10 +265,8 @@ createActor = do ->
     constructor: (@runner, @context) ->
       super()
 
-    run: (prevArgs, onResolved, onRejected) ->
+    run: ->
       if The.verbose then (console?.log ? alert) "#{@toVerboseString()}#run"
-      @runner prevArgs, (args...) ->
-        onResolved args
 
     cancel: ->
       if The.verbose then (console?.log ? alert) "#{@toVerboseString()}#cancel"
@@ -282,38 +280,49 @@ createActor = do ->
 
     name: 'AsyncActor'
 
-    constructor: (runner, context, @argNames) ->
+    constructor: (runner, context) ->
       super runner, context
 
     run: (prevArgs, onResolved, onRejected) ->
+      super()
+
+      argNames = getArgNames @runner
+      resolveIndex = indexOf argNames, 'resolve'
+      rejectIndex = indexOf argNames, 'reject'
+
       args = [prevArgs]
-      args[indexOf @argNames, 'resolve'] = (args...) ->
-        onResolved args
-      args[indexOf @argNames, 'reject'] = onRejected
-      @timeoutId = defer =>
-        try
-          @canceller = @runner.apply @context, args
-        catch err
-          onRejected err
+      if resolveIndex isnt -1
+        args[resolveIndex] = (args...) ->
+          onResolved args
+      if rejectIndex isnt -1
+        args[rejectIndex] = onRejected
 
-  class SyncActor extends Actor
+      @timeoutId = if resolveIndex is -1
+        # Resolve automatically when runner doesn't have a 'resolve' argument.
+        defer =>
+          try
+            returns = @runner.apply @context, args
+          catch err
+            onRejected err
+          if returns instanceof The
+            new TheActor(returns).run prevArgs, onResolved, onRejected
+          else
+            unless @ instanceof FailActor
+              onResolved()
+      else
+        # Flow is stopping till resolve() is called in runner when runner has 'resolve' argument.
+        defer =>
+          try
+            @canceller = @runner.apply @context, args
+          catch err
+            onRejected err
 
-    name: 'SyncActor'
+  class FailActor extends AsyncActor
 
-    constructor: (runner, context, argNames, @isFail = false) ->
+    name: 'FailActor'
+
+    constructor: (runner, context) ->
       super runner, context
-
-    run: (prevArgs, onResolved, onRejected) ->
-      @timeoutId = defer =>
-        try
-          returns = @runner.call @context, prevArgs
-        catch err
-          onRejected err
-        if returns instanceof The
-          new TheActor(returns).run prevArgs, onResolved, onRejected
-        else
-          unless @isFail
-            onResolved()
 
   class TheActor extends Actor
 
@@ -337,11 +346,10 @@ createActor = do ->
     else if runner instanceof The
       new TheActor runner
     else if isFunction runner
-      argNames = getArgumentNames runner
-      if indexOf(argNames, 'resolve') is -1
-        new SyncActor runner, context, argNames, isFail
+      if isFail
+        new FailActor runner, context
       else
-        new AsyncActor runner, context, argNames
+        new AsyncActor runner, context
     else
       throw new TypeError "runner must be specified as `The` instance or `function`"
 
