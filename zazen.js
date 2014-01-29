@@ -137,13 +137,13 @@
       if (arguments.length !== 1) {
         throw new TypeError('The#then() requires one parameter: instance of `The`, `Function` or `Array<Function>`');
       }
-      this.tasks.push(createTask(actors, this.context, this._onRejected));
+      this.tasks.push(createTask(actors, this.context));
       this.resume();
       return this;
     };
 
     The.prototype.fail = function(actor) {
-      this.tasks.push(new FailTask(actor, this.context, this._onRejected));
+      this.tasks.push(new FailTask(actor, this.context));
       this.resume();
       return this;
     };
@@ -203,10 +203,10 @@
       return "" + (The.__super__.toVerboseString.call(this)) + "{ index: " + this.index + ", isRunning: " + this.isRunning + " }";
     };
 
-    The.prototype._onResolved = function(argsList) {
+    The.prototype._onResolved = function(args) {
       var index, task, _ref;
-      if (argsList == null) {
-        argsList = [];
+      if (args == null) {
+        args = [];
       }
       if (!this.isRunning) {
         return;
@@ -224,10 +224,10 @@
       if (The.verbose) {
         ((_ref = typeof console !== "undefined" && console !== null ? console.log : void 0) != null ? _ref : alert)("" + (this.toVerboseString()) + "#_onResolved()");
       }
-      return task.run(argsList, this._onResolved);
+      return task.run(args, this._onResolved, this._onRejected);
     };
 
-    The.prototype._onRejected = function(actor, err) {
+    The.prototype._onRejected = function(err) {
       var index, task, _ref,
         _this = this;
       index = this.index;
@@ -244,10 +244,10 @@
       if (The.verbose) {
         ((_ref = typeof console !== "undefined" && console !== null ? console.log : void 0) != null ? _ref : alert)("" + (this.toVerboseString()) + "#_onRejected()");
       }
-      return task.run(err, function(argsList) {
+      return task.run(err, function(args) {
         _this.isRunning = true;
-        return _this._onResolved(argsList);
-      });
+        return _this._onResolved(args);
+      }, this._onRejected);
     };
 
     return The;
@@ -289,16 +289,14 @@
 
       SingleTask.prototype.name = 'SingleTask';
 
-      function SingleTask(actor, context, fail) {
+      function SingleTask(actor, context) {
         SingleTask.__super__.constructor.call(this);
-        this.actor = createActor(actor, context, fail);
+        this.actor = createActor(actor, context);
       }
 
-      SingleTask.prototype.run = function(prevArgsList, done) {
+      SingleTask.prototype.run = function(args, onResolved, onRejected) {
         SingleTask.__super__.run.call(this);
-        return this.actor.run(prevArgsList, function(args) {
-          return done(args);
-        });
+        return this.actor.run(args, onResolved, onRejected);
       };
 
       SingleTask.prototype.cancel = function() {
@@ -314,17 +312,17 @@
 
       MultiTask.prototype.name = 'MultiTask';
 
-      function MultiTask(actors, context, fail) {
+      function MultiTask(actors, context) {
         var actor, i, _i, _len;
         MultiTask.__super__.constructor.call(this);
         this.actor = [];
         for (i = _i = 0, _len = actors.length; _i < _len; i = ++_i) {
           actor = actors[i];
-          this.actor[i] = createActor(actor, context, fail);
+          this.actor[i] = createActor(actor, context);
         }
       }
 
-      MultiTask.prototype.run = function(prevArgsList, done) {
+      MultiTask.prototype.run = function(prevArgs, onResolved, onRejected) {
         var actor, argsList, i, _i, _len, _ref, _results;
         MultiTask.__super__.run.call(this);
         argsList = [];
@@ -334,7 +332,7 @@
           actor = _ref[i];
           argsList[i] = null;
           _results.push((function(i) {
-            return actor.run(prevArgsList, function(args) {
+            return actor.run(prevArgs, function(args) {
               var isDone, _j, _len1;
               argsList[i] = args;
               isDone = true;
@@ -343,9 +341,9 @@
                 isDone && (isDone = args !== null);
               }
               if (isDone) {
-                return done(argsList);
+                return onResolved(argsList);
               }
-            });
+            }, onRejected);
           })(i));
         }
         return _results;
@@ -371,16 +369,14 @@
 
       FailTask.prototype.name = 'FailTask';
 
-      function FailTask(actor, context, fail) {
+      function FailTask(actor, context) {
         FailTask.__super__.constructor.call(this);
-        this.actor = createActor(actor, context, fail, true);
+        this.actor = createActor(actor, context, true);
       }
 
-      FailTask.prototype.run = function(err, done) {
+      FailTask.prototype.run = function(err, onResolved, onRejected) {
         FailTask.__super__.run.call(this);
-        return this.actor.run(err, function(args) {
-          return done(args);
-        });
+        return this.actor.run(err, onResolved, onRejected);
       };
 
       FailTask.prototype.cancel = function() {
@@ -392,11 +388,11 @@
 
     })(Task);
     return {
-      createTask: function(actors, context, fail) {
+      createTask: function(actors, context) {
         if (isArray(actors)) {
-          return new MultiTask(actors, context, fail);
+          return new MultiTask(actors, context);
         } else {
-          return new SingleTask(actors, context, fail);
+          return new SingleTask(actors, context);
         }
       },
       FailTask: FailTask
@@ -418,15 +414,15 @@
         Actor.__super__.constructor.call(this);
       }
 
-      Actor.prototype.run = function(prevArgsList, resolve) {
+      Actor.prototype.run = function(prevArgs, onResolved, onRejected) {
         var _ref1;
         if (The.verbose) {
           ((_ref1 = typeof console !== "undefined" && console !== null ? console.log : void 0) != null ? _ref1 : alert)("" + (this.toVerboseString()) + "#run");
         }
-        return this.runner(prevArgsList, function() {
+        return this.runner(prevArgs, function() {
           var args;
           args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
-          return resolve(args);
+          return onResolved(args);
         });
       };
 
@@ -452,25 +448,31 @@
 
       AsyncActor.prototype.name = 'AsyncActor';
 
-      function AsyncActor(runner, context, reject, argNames) {
-        var resolveIndex,
-          _this = this;
-        resolveIndex = indexOf(argNames, 'resolve');
-        AsyncActor.__super__.constructor.call(this, function(prevArgsList, resolve) {
-          var args;
-          args = [prevArgsList];
-          args[resolveIndex] = resolve;
-          return _this.timeoutId = defer(function() {
-            var err;
-            try {
-              return _this.canceller = runner.apply(context, args);
-            } catch (_error) {
-              err = _error;
-              return reject(_this, err);
-            }
-          });
-        }, context);
+      function AsyncActor(runner, context, argNames) {
+        this.argNames = argNames;
+        AsyncActor.__super__.constructor.call(this, runner, context);
       }
+
+      AsyncActor.prototype.run = function(prevArgs, onResolved, onRejected) {
+        var args,
+          _this = this;
+        args = [prevArgs];
+        args[indexOf(this.argNames, 'resolve')] = function() {
+          var args;
+          args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
+          return onResolved(args);
+        };
+        args[indexOf(this.argNames, 'reject')] = onRejected;
+        return this.timeoutId = defer(function() {
+          var err;
+          try {
+            return _this.canceller = _this.runner.apply(_this.context, args);
+          } catch (_error) {
+            err = _error;
+            return onRejected(err);
+          }
+        });
+      };
 
       return AsyncActor;
 
@@ -480,32 +482,30 @@
 
       SyncActor.prototype.name = 'SyncActor';
 
-      function SyncActor(runner, context, reject, argNames, isFail) {
-        var _this = this;
-        if (isFail == null) {
-          isFail = false;
-        }
-        SyncActor.__super__.constructor.call(this, function(prevArgsList, resolve) {
-          return _this.timeoutId = defer(function() {
-            var err, returns;
-            try {
-              returns = runner.call(context, prevArgsList);
-            } catch (_error) {
-              err = _error;
-              reject(_this, err);
-            }
-            if (returns instanceof The) {
-              return new TheActor(returns).run(prevArgsList, function(args) {
-                return resolve.apply(null, args);
-              });
-            } else {
-              if (!isFail) {
-                return resolve();
-              }
-            }
-          });
-        }, context);
+      function SyncActor(runner, context, argNames, isFail) {
+        this.isFail = isFail != null ? isFail : false;
+        SyncActor.__super__.constructor.call(this, runner, context);
       }
+
+      SyncActor.prototype.run = function(prevArgs, onResolved, onRejected) {
+        var _this = this;
+        return this.timeoutId = defer(function() {
+          var err, returns;
+          try {
+            returns = _this.runner.call(_this.context, prevArgs);
+          } catch (_error) {
+            err = _error;
+            onRejected(err);
+          }
+          if (returns instanceof The) {
+            return new TheActor(returns).run(prevArgs, onResolved, onRejected);
+          } else {
+            if (!_this.isFail) {
+              return onResolved();
+            }
+          }
+        });
+      };
 
       return SyncActor;
 
@@ -520,8 +520,8 @@
         TheActor.__super__.constructor.call(this, the);
       }
 
-      TheActor.prototype.run = function(prevArgsList, resolve) {
-        return this.runner.then(resolve);
+      TheActor.prototype.run = function(prevArgs, onResolved, onRejected) {
+        return this.runner.then(onResolved).fail(onRejected);
       };
 
       TheActor.prototype.cancel = function() {
@@ -531,7 +531,7 @@
       return TheActor;
 
     })(Actor);
-    return function(runner, context, fail, isFail) {
+    return function(runner, context, isFail) {
       var argNames;
       if (isFail == null) {
         isFail = false;
@@ -543,9 +543,9 @@
       } else if (isFunction(runner)) {
         argNames = getArgumentNames(runner);
         if (indexOf(argNames, 'resolve') === -1) {
-          return new SyncActor(runner, context, fail, argNames, isFail);
+          return new SyncActor(runner, context, argNames, isFail);
         } else {
-          return new AsyncActor(runner, context, fail, argNames);
+          return new AsyncActor(runner, context, argNames);
         }
       } else {
         throw new TypeError("runner must be specified as `The` instance or `function`");

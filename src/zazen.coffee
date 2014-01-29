@@ -98,12 +98,12 @@ class The extends Klass
   then: (actors) ->
     if arguments.length isnt 1
       throw new TypeError 'The#then() requires one parameter: instance of `The`, `Function` or `Array<Function>`'
-    @tasks.push createTask actors, @context, @_onRejected
+    @tasks.push createTask actors, @context
     @resume()
     @
 
   fail: (actor) ->
-    @tasks.push new FailTask actor, @context, @_onRejected
+    @tasks.push new FailTask actor, @context
     @resume()
     @
 
@@ -142,7 +142,7 @@ class The extends Klass
   toVerboseString: ->
     """#{super()}{ index: #{@index}, isRunning: #{@isRunning} }"""
 
-  _onResolved: (argsList = []) ->
+  _onResolved: (args = []) ->
     return unless @isRunning
     index = @index
 
@@ -153,9 +153,9 @@ class The extends Klass
 
     @index = index
     if The.verbose then (console?.log ? alert) "#{@toVerboseString()}#_onResolved()"
-    task.run argsList, @_onResolved
+    task.run args, @_onResolved, @_onRejected
 
-  _onRejected: (actor, err) ->
+  _onRejected: (err) ->
     index = @index
     @pause()
 
@@ -166,9 +166,10 @@ class The extends Klass
 
     @index = index
     if The.verbose then (console?.log ? alert) "#{@toVerboseString()}#_onRejected()"
-    task.run err, (argsList) =>
+    task.run err, (args) =>
       @isRunning = true
-      @_onResolved argsList
+      @_onResolved args
+    , @_onRejected
 
 
 { createTask, FailTask } = do ->
@@ -190,14 +191,13 @@ class The extends Klass
 
     name: 'SingleTask'
 
-    constructor: (actor, context, fail) ->
+    constructor: (actor, context) ->
       super()
-      @actor = createActor actor, context, fail
+      @actor = createActor actor, context
 
-    run: (prevArgsList, done) ->
+    run: (args, onResolved, onRejected) ->
       super()
-      @actor.run prevArgsList, (args) ->
-        done args
+      @actor.run args, onResolved, onRejected
 
     cancel: ->
       super()
@@ -207,24 +207,25 @@ class The extends Klass
 
     name: 'MultiTask'
 
-    constructor: (actors, context, fail) ->
+    constructor: (actors, context) ->
       super()
       @actor = []
       for actor, i in actors
-        @actor[i] = createActor actor, context, fail
+        @actor[i] = createActor actor, context
 
-    run: (prevArgsList, done) ->
+    run: (prevArgs, onResolved, onRejected) ->
       super()
       argsList = []
       for actor, i in @actor
         argsList[i] = null
         do (i) ->
-          actor.run prevArgsList, (args) ->
+          actor.run prevArgs, (args) ->
             argsList[i] = args
             isDone = true
             isDone and= args isnt null for args in argsList
             if isDone
-              done argsList
+              onResolved argsList
+          , onRejected
 
     cancel: ->
       super()
@@ -235,24 +236,23 @@ class The extends Klass
 
     name: 'FailTask'
 
-    constructor: (actor, context, fail) ->
+    constructor: (actor, context) ->
       super()
-      @actor = createActor actor, context, fail, true
+      @actor = createActor actor, context, true
 
-    run: (err, done) ->
+    run: (err, onResolved, onRejected) ->
       super()
-      @actor.run err, (args) ->
-        done args
+      @actor.run err, onResolved, onRejected
 
     cancel: ->
       super()
       @actor.cancel()
 
-  createTask: (actors, context, fail) ->
+  createTask: (actors, context) ->
     if isArray actors
-      new MultiTask actors, context, fail
+      new MultiTask actors, context
     else
-      new SingleTask actors, context, fail
+      new SingleTask actors, context
   FailTask: FailTask
 
 
@@ -265,10 +265,10 @@ createActor = do ->
     constructor: (@runner, @context) ->
       super()
 
-    run: (prevArgsList, resolve) ->
+    run: (prevArgs, onResolved, onRejected) ->
       if The.verbose then (console?.log ? alert) "#{@toVerboseString()}#run"
-      @runner prevArgsList, (args...) ->
-        resolve args
+      @runner prevArgs, (args...) ->
+        onResolved args
 
     cancel: ->
       if The.verbose then (console?.log ? alert) "#{@toVerboseString()}#cancel"
@@ -282,36 +282,38 @@ createActor = do ->
 
     name: 'AsyncActor'
 
-    constructor: (runner, context, reject, argNames) ->
-      resolveIndex = indexOf argNames, 'resolve'
-      super (prevArgsList, resolve) =>
-        args = [prevArgsList]
-        args[resolveIndex] = resolve
-        @timeoutId = defer =>
-          try
-            @canceller = runner.apply context, args
-          catch err
-            reject @, err
-      , context
+    constructor: (runner, context, @argNames) ->
+      super runner, context
+
+    run: (prevArgs, onResolved, onRejected) ->
+      args = [prevArgs]
+      args[indexOf @argNames, 'resolve'] = (args...) ->
+        onResolved args
+      args[indexOf @argNames, 'reject'] = onRejected
+      @timeoutId = defer =>
+        try
+          @canceller = @runner.apply @context, args
+        catch err
+          onRejected err
 
   class SyncActor extends Actor
 
     name: 'SyncActor'
 
-    constructor: (runner, context, reject, argNames, isFail = false) ->
-      super (prevArgsList, resolve) =>
-        @timeoutId = defer =>
-          try
-            returns = runner.call context, prevArgsList
-          catch err
-            reject @, err
-          if returns instanceof The
-            new TheActor(returns).run prevArgsList, (args) ->
-              resolve.apply null, args
-          else
-            unless isFail
-              resolve()
-      , context
+    constructor: (runner, context, argNames, @isFail = false) ->
+      super runner, context
+
+    run: (prevArgs, onResolved, onRejected) ->
+      @timeoutId = defer =>
+        try
+          returns = @runner.call @context, prevArgs
+        catch err
+          onRejected err
+        if returns instanceof The
+          new TheActor(returns).run prevArgs, onResolved, onRejected
+        else
+          unless @isFail
+            onResolved()
 
   class TheActor extends Actor
 
@@ -321,13 +323,15 @@ createActor = do ->
       the.stop()
       super the
 
-    run: (prevArgsList, resolve) ->
-      @runner.then resolve
+    run: (prevArgs, onResolved, onRejected) ->
+      @runner
+      .then(onResolved)
+      .fail(onRejected)
 
     cancel: ->
       @runner.pause()
 
-  (runner, context, fail, isFail = false) ->
+  (runner, context, isFail = false) ->
     if runner instanceof Actor
       runner
     else if runner instanceof The
@@ -335,9 +339,9 @@ createActor = do ->
     else if isFunction runner
       argNames = getArgumentNames runner
       if indexOf(argNames, 'resolve') is -1
-        new SyncActor runner, context, fail, argNames, isFail
+        new SyncActor runner, context, argNames, isFail
       else
-        new AsyncActor runner, context, fail, argNames
+        new AsyncActor runner, context, argNames
     else
       throw new TypeError "runner must be specified as `The` instance or `function`"
 

@@ -540,7 +540,9 @@
         i = -1;
         return The.then(function(resolve) {
           return resolve('async1');
-        }).then(function(message, resolve) {
+        }).then(function(_arg, resolve) {
+          var message;
+          message = _arg[0];
           throw new Error(message);
           return setTimeout(function() {
             expect().fail();

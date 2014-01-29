@@ -492,7 +492,7 @@ describe 'The', ->
       The
       .then (resolve) ->
           resolve 'async1'
-      .then (message, resolve) ->
+      .then ([message], resolve) ->
           throw new Error message
           setTimeout ->
             expect().fail()
