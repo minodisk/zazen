@@ -1,9 +1,9 @@
 (function() {
-  var The, expect, now;
+  var The, expect, now, promisify, _ref;
 
   expect = require('../node_modules/expect.js');
 
-  The = require('../zazen').The;
+  _ref = require('../zazen'), The = _ref.The, promisify = _ref.promisify;
 
   now = function() {
     return new Date().getTime();

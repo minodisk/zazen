@@ -2,7 +2,7 @@
   "framework": "mocha",
   "src_files": [
     "jquery.zazen.js",
-    "test/src/*.coffee"
+    "test/*.js"
   ],
   "serve_files": [
     "bower_components/jquery/jquery.js",
@@ -17,9 +17,9 @@
     }
   },
   "launch_in_dev": [
-    "Mocha",
-    "Chrome",
+    "Safari",
     "Firefox",
-    "Safari"
+    "Chrome",
+    "Mocha"
   ]
 }
