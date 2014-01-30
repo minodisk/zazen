@@ -6,24 +6,43 @@ module.exports = (grunt) ->
     watch:
       main:
         files: [
-          'src/zazen.coffee'
+          'src/*.coffee'
         ]
-        tasks: [ 'coffee' ]
-      jquerize:
+        tasks: [
+          'main'
+        ]
+      test:
         files: [
-          'src/jquerize.coffee'
+          'test/src/*.coffee'
         ]
-        tasks: [ 'jquerize' ]
+        tasks: [
+          'test'
+        ]
 
     coffee:
       main:
-        files:
-          'zazen.js': [ 'src/zazen.coffee' ]
-      jquerize:
         options:
           join: true
         files:
-          'jquery.zazen.js': [ 'src/zazen.coffee', 'src/jquerize.coffee' ]
+          'zazen.js': [
+            'src/zazen.coffee'
+          ]
+          'jquery.zazen.js': [
+            'src/zazen.coffee'
+            'src/jquerize.coffee'
+          ]
+      test:
+        options:
+          join: true
+        files:
+          'test/browser_test.js': [
+            'test/src/test.coffee'
+            'test/src/browser.coffee'
+          ]
+          'test/node_test.js': [
+            'test/src/node.coffee'
+            'test/src/test.coffee'
+          ]
 
     bump:
       options:
@@ -47,19 +66,20 @@ module.exports = (grunt) ->
   grunt.loadNpmTasks 'grunt-bump'
   grunt.loadNpmTasks 'grunt-release'
 
-  grunt.registerTask 'default', [
-    'run'
-    'watch'
+  grunt.registerTask 'main', [
+    'coffee:main'
+  ]
+  grunt.registerTask 'test', [
+    'coffee:test'
   ]
   grunt.registerTask 'run', [
     'coffee'
   ]
-  grunt.registerTask 'main', [
-    'coffee:main'
+  grunt.registerTask 'default', [
+    'run'
+    'watch'
   ]
-  grunt.registerTask 'jquerize', [
-    'coffee:jquerize'
-  ]
+
   grunt.registerTask 'publish', [
     'bump'
     'release'

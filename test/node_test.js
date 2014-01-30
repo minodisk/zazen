@@ -71,15 +71,16 @@
 
           Foo.prototype.start = function() {
             return The(this).then(function(resolve) {
-              var intervalId,
-                _this = this;
+              var intervalId;
               expect(this.x).to.be.equal(0);
-              return intervalId = setInterval(function() {
-                if (++_this.x >= 10) {
-                  clearInterval(intervalId);
-                  return resolve();
-                }
-              }, 33);
+              return intervalId = setInterval((function(_this) {
+                return function() {
+                  if (++_this.x >= 10) {
+                    clearInterval(intervalId);
+                    return resolve();
+                  }
+                };
+              })(this), 33);
             });
           };
 
