@@ -354,3 +354,13 @@ createActor = do ->
       throw new TypeError "runner must be specified as `The` instance or `function`"
 
 exports.The = The
+
+exports.promisify = (fn) ->
+  (args...) ->
+    The.then (resolve, reject) ->
+      args.push (err, res...) ->
+        if err?
+          reject err
+        else
+          resolve.apply @, res
+      fn.apply null, args

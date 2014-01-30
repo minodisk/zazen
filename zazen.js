@@ -553,4 +553,23 @@
 
   exports.The = The;
 
+  exports.promisify = function(fn) {
+    return function() {
+      var args;
+      args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
+      return The.then(function(resolve, reject) {
+        args.push(function() {
+          var err, res;
+          err = arguments[0], res = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
+          if (err != null) {
+            return reject(err);
+          } else {
+            return resolve.apply(this, res);
+          }
+        });
+        return fn.apply(null, args);
+      });
+    };
+  };
+
 }).call(this);

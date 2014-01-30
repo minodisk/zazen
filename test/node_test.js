@@ -1,5 +1,5 @@
 (function() {
-  var The, expect, now, promisify, _ref;
+  var The, expect, fs, now, path, promisify, _ref;
 
   expect = require('../node_modules/expect.js');
 
@@ -823,6 +823,25 @@
           expect(b).to.be.equal(b);
           return done();
         });
+      });
+    });
+  });
+
+  fs = require('fs');
+
+  path = require('path');
+
+  describe('promisify()', function() {
+    return it("it should wrap asynchronous Node method", function(done) {
+      var readFile;
+      readFile = promisify(fs.readFile);
+      return readFile(path.join(__dirname, 'data/a.json'), {
+        encode: 'utf8'
+      }).fail(function(err) {
+        return expect().fail();
+      }).then(function(data) {
+        expect(JSON.parse(data).message).to.be.equal('a');
+        return done();
       });
     });
   });
