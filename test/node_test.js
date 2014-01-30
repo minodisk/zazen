@@ -1,9 +1,9 @@
 (function() {
-  var The, expect, now;
+  var The, expect, fs, now, path, promisify, _ref;
 
   expect = require('../node_modules/expect.js');
 
-  The = require('../zazen').The;
+  _ref = require('../zazen'), The = _ref.The, promisify = _ref.promisify;
 
   now = function() {
     return new Date().getTime();
@@ -71,15 +71,16 @@
 
           Foo.prototype.start = function() {
             return The(this).then(function(resolve) {
-              var intervalId,
-                _this = this;
+              var intervalId;
               expect(this.x).to.be.equal(0);
-              return intervalId = setInterval(function() {
-                if (++_this.x >= 10) {
-                  clearInterval(intervalId);
-                  return resolve();
-                }
-              }, 33);
+              return intervalId = setInterval((function(_this) {
+                return function() {
+                  if (++_this.x >= 10) {
+                    clearInterval(intervalId);
+                    return resolve();
+                  }
+                };
+              })(this), 33);
             });
           };
 
@@ -822,6 +823,25 @@
           expect(b).to.be.equal(b);
           return done();
         });
+      });
+    });
+  });
+
+  fs = require('fs');
+
+  path = require('path');
+
+  describe('promisify()', function() {
+    return it("it should wrap asynchronous Node method", function(done) {
+      var readFile;
+      readFile = promisify(fs.readFile);
+      return readFile(path.join(__dirname, 'data/a.json'), {
+        encode: 'utf8'
+      }).fail(function(err) {
+        return expect().fail();
+      }).then(function(data) {
+        expect(JSON.parse(data).message).to.be.equal('a');
+        return done();
       });
     });
   });

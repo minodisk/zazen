@@ -228,8 +228,7 @@
     };
 
     The.prototype._onRejected = function(err) {
-      var index, task, _ref,
-        _this = this;
+      var index, task, _ref;
       index = this.index;
       this.pause();
       while ((task = this.tasks[++index]) != null) {
@@ -244,10 +243,12 @@
       if (The.verbose) {
         ((_ref = typeof console !== "undefined" && console !== null ? console.log : void 0) != null ? _ref : alert)("" + (this.toVerboseString()) + "#_onRejected()");
       }
-      return task.run(err, function(args) {
-        _this.isRunning = true;
-        return _this._onResolved(args);
-      }, this._onRejected);
+      return task.run(err, (function(_this) {
+        return function(args) {
+          _this.isRunning = true;
+          return _this._onResolved(args);
+        };
+      })(this), this._onRejected);
     };
 
     return The;
@@ -448,8 +449,7 @@
       }
 
       AsyncActor.prototype.run = function(prevArgs, onResolved, onRejected) {
-        var argNames, args, rejectIndex, resolveIndex,
-          _this = this;
+        var argNames, args, rejectIndex, resolveIndex;
         AsyncActor.__super__.run.call(this);
         argNames = getArgNames(this.runner);
         resolveIndex = indexOf(argNames, 'resolve');
@@ -465,30 +465,34 @@
         if (rejectIndex !== -1) {
           args[rejectIndex] = onRejected;
         }
-        return this.timeoutId = resolveIndex === -1 ? defer(function() {
-          var err, returns;
-          try {
-            returns = _this.runner.apply(_this.context, args);
-          } catch (_error) {
-            err = _error;
-            onRejected(err);
-          }
-          if (returns instanceof The) {
-            return new TheActor(returns).run(prevArgs, onResolved, onRejected);
-          } else {
-            if (!(_this instanceof FailActor)) {
-              return onResolved();
+        return this.timeoutId = resolveIndex === -1 ? defer((function(_this) {
+          return function() {
+            var err, returns;
+            try {
+              returns = _this.runner.apply(_this.context, args);
+            } catch (_error) {
+              err = _error;
+              onRejected(err);
             }
-          }
-        }) : defer(function() {
-          var err;
-          try {
-            return _this.canceller = _this.runner.apply(_this.context, args);
-          } catch (_error) {
-            err = _error;
-            return onRejected(err);
-          }
-        });
+            if (returns instanceof The) {
+              return new TheActor(returns).run(prevArgs, onResolved, onRejected);
+            } else {
+              if (!(_this instanceof FailActor)) {
+                return onResolved();
+              }
+            }
+          };
+        })(this)) : defer((function(_this) {
+          return function() {
+            var err;
+            try {
+              return _this.canceller = _this.runner.apply(_this.context, args);
+            } catch (_error) {
+              err = _error;
+              return onRejected(err);
+            }
+          };
+        })(this));
       };
 
       return AsyncActor;
@@ -548,6 +552,25 @@
   })();
 
   exports.The = The;
+
+  exports.promisify = function(fn) {
+    return function() {
+      var args;
+      args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
+      return The.then(function(resolve, reject) {
+        args.push(function() {
+          var err, res;
+          err = arguments[0], res = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
+          if (err != null) {
+            return reject(err);
+          } else {
+            return resolve.apply(this, res);
+          }
+        });
+        return fn.apply(null, args);
+      });
+    };
+  };
 
   $.extend({
     tajax: function() {
