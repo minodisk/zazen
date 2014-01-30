@@ -77,8 +77,8 @@ wait(<span class="hljs-number">1000</span>, <span class="hljs-function"><span cl
         
       
         
-        <p>コールバックで書く非同期処理はネストでreadabilityを失います。
-zazenで見通しの良いコードにしましょう。</p>
+        <p>callbackを使って書く非同期処理はdeep nestでreadabilityを失います。
+zazenはcodeのreadabilityを保ちます。</p>
 
         
           <div class='highlight'><pre>The
@@ -118,12 +118,20 @@ zazenで見通しの良いコードにしましょう。</p>
       
         
         <h2 id="pomisify">Pomisify</h2>
+<p>zazenをNodeで使うとき、<code>promisify()</code>というユーティリティが役に立ちます。
+これは<code>function (err, result) {}</code>のようなcallbackを引数とする非同期なNodeのmethodをzazenのスタイルにwrapします。</p>
 
         
           <div class='highlight'><pre><span class="hljs-keyword">var</span> promisify = zazen.promisify
-  , fs = promisify(<span class="hljs-built_in">require</span>(<span class="hljs-string">'fs'</span>))
-  , httpGet = promisify(<span class="hljs-built_in">require</span>(<span class="hljs-string">'http'</span>).get)
-  ;</pre></div>
+  , readFile = promisify(<span class="hljs-built_in">require</span>(<span class="hljs-string">'fs'</span>).readFile)
+  ;
+readFile(<span class="hljs-string">'data/a.json'</span>)
+  .fail(<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">(err)</span> {</span>
+    console.log(err);
+  })
+  .then(<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">(data)</span> {</span>
+    console.log(data);
+  });</pre></div>
         
       
         

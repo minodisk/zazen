@@ -41,8 +41,8 @@ wait(1000, function () {
     });
   });
 });
-// コールバックで書く非同期処理はネストでreadabilityを失います。
-// zazenで見通しの良いコードにしましょう。
+// callbackを使って書く非同期処理はdeep nestでreadabilityを失います。
+// zazenはcodeのreadabilityを保ちます。
 The
   .wait(1000)
   .then(function () {
@@ -66,10 +66,18 @@ The
 // ## Recover error
 
 // ## Pomisify
+// zazenをNodeで使うとき、`promisify()`というユーティリティが役に立ちます。
+// これは`function (err, result) {}`のようなcallbackを引数とする非同期なNodeのmethodをzazenのスタイルにwrapします。
 var promisify = zazen.promisify
-  , fs = promisify(require('fs'))
-  , httpGet = promisify(require('http').get)
+  , readFile = promisify(require('fs').readFile)
   ;
+readFile('data/a.json')
+  .fail(function (err) {
+    console.log(err);
+  })
+  .then(function (data) {
+    console.log(data);
+  });
 
 // ## Use with underscore or lo-dash
 The
