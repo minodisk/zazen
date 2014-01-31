@@ -1,5 +1,5 @@
-// # Zazen
-// zazenは`The`と`then`その他の少しのキーワードで構成される、asynchronous processをchainするライブラリです。
+// # zazen
+// zazenは`The`と`then`とその他の少しのキーワードで構成される、非同期プロセスを繋ぐためのライブラリです。
 
 // ### Escape from callback hell
 
