@@ -3,8 +3,12 @@ $document = $ document
 
 $document.one 'ready', ->
 
-  $links = $ 'ul.toc_section li a'
+  $links = $ '.toc a'
   $titles = $links
+  .filter (i, el) ->
+      $link = $ el
+      href = $link.attr 'href'
+      href isnt '#' and href.charAt(0) is '#'
   .map (i, el) ->
       $link = $ el
       $ $link.attr 'href'

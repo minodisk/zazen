@@ -2,40 +2,40 @@
 
 @font-face {
     font-family: 'aller-light';
-    src: url('public/fonts/aller-light.eot');
-    src: url('public/fonts/aller-light.eot?#iefix') format('embedded-opentype'),
-         url('public/fonts/aller-light.woff') format('woff'),
-         url('public/fonts/aller-light.ttf') format('truetype');
+    src: url('fonts/aller-light.eot');
+    src: url('fonts/aller-light.eot?#iefix') format('embedded-opentype'),
+         url('fonts/aller-light.woff') format('woff'),
+         url('fonts/aller-light.ttf') format('truetype');
     font-weight: normal;
     font-style: normal;
 }
 
 @font-face {
     font-family: 'aller-bold';
-    src: url('public/fonts/aller-bold.eot');
-    src: url('public/fonts/aller-bold.eot?#iefix') format('embedded-opentype'),
-         url('public/fonts/aller-bold.woff') format('woff'),
-         url('public/fonts/aller-bold.ttf') format('truetype');
+    src: url('fonts/aller-bold.eot');
+    src: url('fonts/aller-bold.eot?#iefix') format('embedded-opentype'),
+         url('fonts/aller-bold.woff') format('woff'),
+         url('fonts/aller-bold.ttf') format('truetype');
     font-weight: normal;
     font-style: normal;
 }
 
 @font-face {
     font-family: 'novecento-bold';
-    src: url('public/fonts/novecento-bold.eot');
-    src: url('public/fonts/novecento-bold.eot?#iefix') format('embedded-opentype'),
-         url('public/fonts/novecento-bold.woff') format('woff'),
-         url('public/fonts/novecento-bold.ttf') format('truetype');
+    src: url('fonts/novecento-bold.eot');
+    src: url('fonts/novecento-bold.eot?#iefix') format('embedded-opentype'),
+         url('fonts/novecento-bold.woff') format('woff'),
+         url('fonts/novecento-bold.ttf') format('truetype');
     font-weight: normal;
     font-style: normal;
 }
 
 @font-face {
     font-family: 'fleurons';
-    src: url('public/fonts/fleurons.eot');
-    src: url('public/fonts/fleurons.eot?#iefix') format('embedded-opentype'),
-         url('public/fonts/fleurons.woff') format('woff'),
-         url('public/fonts/fleurons.ttf') format('truetype');
+    src: url('fonts/fleurons.eot');
+    src: url('fonts/fleurons.eot?#iefix') format('embedded-opentype'),
+         url('fonts/fleurons.woff') format('woff'),
+         url('fonts/fleurons.ttf') format('truetype');
     font-weight: normal;
     font-style: normal;
 }
@@ -44,7 +44,7 @@
 
 body {
   font-family: "aller-light";
-  background: url('public/images/gray.png') #fff;
+  background: url('../docs/images/gray.png') #fff;
   background-size: 322px;
   margin: 0;
 }
@@ -151,8 +151,8 @@ pre, tt, code {
     padding: 30px;
     margin: 30px;
     background: #fff;
-    font-size: 17px;
-    line-height: 26px;
+    /*font-size: 17px;*/
+    /*line-height: 26px;*/
   }
     .page p {
       color: #30404f;
@@ -169,34 +169,34 @@ ul.sections {
   margin: 12px 0;
 }
 
-.toc {
-  max-height: 0;
-  overflow: hidden;
-  text-align: center;
-  font-size: 13px;
-  line-height: 20px;
-  -moz-transition: max-height 1s;
-  -webkit-transition: max-height 1s;
-  transition: max-height 1s;
-}
-  .header:hover .toc {
-    max-height: 500px;
-  }
-  .toc h3 {
-    margin-top: 20px;
-  }
-  .toc ol {
-    margin: 0 0 20px 0;
-    display: inline-block;
-    text-align: left;
-    list-style-type: upper-roman;
-  }
-    .toc li {
-      font-family: 'novecento-bold';
-    }
-      .toc li a {
-        font-family: 'aller-light';
-      }
+/*.toc {*/
+  /*max-height: 0;*/
+  /*overflow: hidden;*/
+  /*text-align: center;*/
+  /*font-size: 13px;*/
+  /*line-height: 20px;*/
+  /*-moz-transition: max-height 1s;*/
+  /*-webkit-transition: max-height 1s;*/
+  /*transition: max-height 1s;*/
+/*}*/
+  /*.header:hover .toc {*/
+    /*max-height: 500px;*/
+  /*}*/
+  /*.toc h3 {*/
+    /*margin-top: 20px;*/
+  /*}*/
+  /*.toc ol {*/
+    /*margin: 0 0 20px 0;*/
+    /*display: inline-block;*/
+    /*text-align: left;*/
+    /*list-style-type: upper-roman;*/
+  /*}*/
+    /*.toc li {*/
+      /*font-family: 'novecento-bold';*/
+    /*}*/
+      /*.toc li a {*/
+        /*font-family: 'aller-light';*/
+      /*}*/
 
 
 /*---------------------- Syntax Highlighting -----------------------------*/
@@ -336,41 +336,4 @@ pre .hljs-chunk {
 
 pre .hljs-tex .hljs-formula {
   opacity: 0.5;
-}
-
-.sidebar {
-  background: #fff;
-  position: fixed;
-  top: 0;
-  left: 0;
-  bottom: 0;
-  width: 200px;
-  overflow-y: auto;
-  overflow-x: hidden;
-  -webkit-overflow-scrolling: touch;
-  padding: 15px 0 30px 30px;
-  border-right: 1px solid #bbb;
-  box-shadow: 0 0 20px #ccc;
-  -webkit-box-shadow: 0 0 20px #ccc;
-  -moz-box-shadow: 0 0 20px #ccc;
-}
-
-ul.toc_section {
-  font-size: 11px;
-  line-height: 14px;
-  margin: 5px 0 0 0;
-  padding-left: 0px;
-  list-style-type: none;
-  font-family: Lucida Grande;
-}
-
-ul.toc_section li a {
-  text-decoration: none;
-  color: #7B838A;
-}
-ul.toc_section li a:hover {
-  text-decoration: underline;
-}
-ul.toc_section li a.is-current {
-  color: #259dff;
 }

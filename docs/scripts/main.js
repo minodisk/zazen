@@ -7,8 +7,13 @@
 
   $document.one('ready', function() {
     var $links, $titles, length;
-    $links = $('ul.toc_section li a');
-    $titles = $links.map(function(i, el) {
+    $links = $('.toc a');
+    $titles = $links.filter(function(i, el) {
+      var $link, href;
+      $link = $(el);
+      href = $link.attr('href');
+      return href !== '#' && href.charAt(0) === '#';
+    }).map(function(i, el) {
       var $link;
       $link = $(el);
       return $($link.attr('href')).data({

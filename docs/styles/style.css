@@ -1,0 +1,44 @@
+@charset "UTF-8";
+body {
+  font-size: 14px;
+  line-height: 22px; }
+
+.sidebar {
+  background: #fff;
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 200px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  padding: 15px 0 30px 30px;
+  border-right: 1px solid #bbb;
+  box-shadow: 0 0 20px #ccc;
+  -webkit-box-shadow: 0 0 20px #ccc;
+  -moz-box-shadow: 0 0 20px #ccc; }
+
+dl.toc {
+  line-height: 14px;
+  margin: 5px 0 0 0;
+  padding-left: 0px;
+  list-style-type: none;
+  font-family: Lucida Grande; }
+  dl.toc a.is-current {
+    color: #259dff; }
+  dl.toc dt {
+    font-weight: bold;
+    margin: 15px 0 5px; }
+  dl.toc dd {
+    font-size: 11px;
+    margin: 3px 0 0 0; }
+    dl.toc dd a {
+      text-decoration: none; }
+      dl.toc dd a:hover span {
+        text-decoration: underline; }
+      dl.toc dd a:before {
+        content: '-';
+        padding-right: 3px; }
+      dl.toc dd a.external:before {
+        content: '»'; }

@@ -3,48 +3,53 @@
 <head>
   <title>Zazen</title>
   <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-  <link rel="stylesheet" media="all" href="public/stylesheets/normalize.css" />
+  <link rel="stylesheet" media="all" href="styles/normalize.css" />
   <link rel="stylesheet" media="all" href="docco.css" />
+  <link rel="stylesheet" media="all" href="styles/style.css" />
   <script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
-  <script src="public/scripts/main.js"></script>
+  <script src="scripts/main.js"></script>
 </head>
 <body>
   <aside class="sidebar">
+  
+    <dl class="toc">
+      <dt><a href="#"><span>zazen</span></a></dt>
+      <dd><a href="https://github.com/minodisk/zazen" class="external"><span>GitHub Repositories</span></a></dd>
+      <dt><a href="#"><span>Introduction</span></a></dt>
     
-
-    
-      <ul class="toc_section">
-      
-        <li><a href="#include">Include</a></li>
-      
-        <li><a href="#escape-from-callback-hell">Escape from callback hell</a></li>
-      
-        <li><a href="#resolve-process">Resolve process</a></li>
-      
-        <li><a href="#reject-process">Reject process</a></li>
-      
-        <li><a href="#run-tasks-serially">Run tasks serially</a></li>
-      
-        <li><a href="#run-tasks-parallely">Run tasks parallely</a></li>
-      
-        <li><a href="#handle-errors">Handle errors</a></li>
-      
-        <li><a href="#recover-error">Recover error</a></li>
-      
-        <li><a href="#utilities">Utilities</a></li>
-      
-        <li><a href="#use-with-underscore-or-lo-dash">Use with underscore or lo-dash</a></li>
-      
-        <li><a href="#distributions">Distributions</a></li>
-      
-        <li><a href="#documentation-authers">Documentation authers</a></li>
-      
-      </ul>
-    
+          <dd><a href="#escape-from-callback-hell"><span>Escape from callback hell</span></a></dd>
+          
+          <dt><a href="#usage"><span>Usage</span></a></dt>
+          
+          <dd><a href="#include"><span>Include</span></a></dd>
+          
+          <dd><a href="#resolve-process"><span>Resolve process</span></a></dd>
+          
+          <dd><a href="#reject-process"><span>Reject process</span></a></dd>
+          
+          <dd><a href="#run-tasks-serially"><span>Run tasks serially</span></a></dd>
+          
+          <dd><a href="#run-tasks-parallely"><span>Run tasks parallely</span></a></dd>
+          
+          <dd><a href="#handle-errors"><span>Handle errors</span></a></dd>
+          
+          <dd><a href="#recover-error"><span>Recover error</span></a></dd>
+          
+          <dd><a href="#utilities"><span>Utilities</span></a></dd>
+          
+          <dd><a href="#use-with-underscore-or-lo-dash"><span>Use with underscore or lo-dash</span></a></dd>
+          
+          <dd><a href="#distributions"><span>Distributions</span></a></dd>
+          
+          <dt><a href="#copyright"><span>Copyright</span></a></dt>
+          
+          <dd><a href="#documentation-authers"><span>Documentation authers</span></a></dd>
+          
+    </dl>
+  
   </aside>
   <div class="container">
     <div class="page">
-
       <div class="header">
         
           
@@ -56,39 +61,7 @@
       </div>
 
       
-        
-        <h2 id="include">Include</h2>
-<p>Node</p>
-
-        
-          <div class='highlight'><pre>
-<span class="hljs-keyword">var</span> zazen = <span class="hljs-built_in">require</span>(<span class="hljs-string">'zazen'</span>)
-  , The = zazen.The
-  ;</pre></div>
-        
-      
-        
-        <p>browser</p>
-<ul>
-<li>standalone<pre><code class="lang-html"><span class="hljs-tag">&lt;<span class="hljs-title">script</span> <span class="hljs-attribute">src</span>=<span class="hljs-value">"path/to/zazen.js"</span>&gt;</span><span class="javascript">
-&lt;script&gt;
-<span class="hljs-keyword">var</span> The = zazen.The;
-</span><span class="hljs-tag">&lt;/<span class="hljs-title">script</span>&gt;</span>
-</code></pre>
-</li>
-<li>with jQuery<pre><code class="lang-html"><span class="hljs-tag">&lt;<span class="hljs-title">script</span> <span class="hljs-attribute">src</span>=<span class="hljs-value">"path/to/jquery.js"</span>&gt;</span><span class="javascript">
-&lt;script src=<span class="hljs-string">"path/to/jquery.zazen.js"</span>&gt;
-<span class="xml"><span class="hljs-tag">&lt;<span class="hljs-title">script</span>&gt;</span><span class="javascript">
-<span class="hljs-keyword">var</span> The = zazen.The;
-</span></span></span><span class="hljs-tag">&lt;/<span class="hljs-title">script</span>&gt;</span>
-</code></pre>
-</li>
-</ul>
-
-        
-      
-        
-        <h2 id="escape-from-callback-hell">Escape from callback hell</h2>
+        <h3 id="escape-from-callback-hell">Escape from callback hell</h3>
 
         
           <div class='highlight'><pre>
@@ -105,8 +78,6 @@ wait(<span class="hljs-number">1000</span>, <span class="hljs-function"><span cl
     });
   });
 });</pre></div>
-        
-      
         
         <p>callbackを使って書く非同期処理はdeep nestでreadabilityを失います。
 zazenはcodeのreadabilityを保ちます。</p>
@@ -126,9 +97,37 @@ zazenはcodeのreadabilityを保ちます。</p>
     console.log(<span class="hljs-number">3</span>);
   });</pre></div>
         
-      
+        <h2 id="usage">Usage</h2>
+
         
-        <h2 id="resolve-process">Resolve process</h2>
+        <h3 id="include">Include</h3>
+<p>Node</p>
+
+        
+          <div class='highlight'><pre>
+<span class="hljs-keyword">var</span> zazen = <span class="hljs-built_in">require</span>(<span class="hljs-string">'zazen'</span>)
+  , The = zazen.The
+  ;</pre></div>
+        
+        <p>browser</p>
+<ul>
+<li>standalone<pre><code class="lang-html"><span class="hljs-tag">&lt;<span class="hljs-title">script</span> <span class="hljs-attribute">src</span>=<span class="hljs-value">"path/to/zazen.js"</span>&gt;</span><span class="javascript">
+&lt;script&gt;
+<span class="hljs-keyword">var</span> The = zazen.The;
+</span><span class="hljs-tag">&lt;/<span class="hljs-title">script</span>&gt;</span>
+</code></pre>
+</li>
+<li>with jQuery<pre><code class="lang-html"><span class="hljs-tag">&lt;<span class="hljs-title">script</span> <span class="hljs-attribute">src</span>=<span class="hljs-value">"path/to/jquery.js"</span>&gt;</span><span class="javascript">
+&lt;script src=<span class="hljs-string">"path/to/jquery.zazen.js"</span>&gt;
+<span class="xml"><span class="hljs-tag">&lt;<span class="hljs-title">script</span>&gt;</span><span class="javascript">
+<span class="hljs-keyword">var</span> The = zazen.The;
+</span></span></span><span class="hljs-tag">&lt;/<span class="hljs-title">script</span>&gt;</span>
+</code></pre>
+</li>
+</ul>
+
+        
+        <h3 id="resolve-process">Resolve process</h3>
 <p>非同期なプロセスを扱うときは<code>resolve</code>というキーワードの引数を設定します。
 プロセスの完了時に<code>resolve()</code>をコールすることで次の<code>then</code>プロセスにヘッドが移ります。
 また、<code>resolve()</code>メソッドの引数にセットした値は、次の<code>then</code>プロセスの引数として引き継がれます。</p>
@@ -144,9 +143,7 @@ zazenはcodeのreadabilityを保ちます。</p>
     console.log(arg); <span class="hljs-comment">// &gt; 'done'</span>
   });</pre></div>
         
-      
-        
-        <h2 id="reject-process">Reject process</h2>
+        <h3 id="reject-process">Reject process</h3>
 <p>失敗する可能性のあるプロセスの場合は<code>reject</code>というキーワードの引数を設定します。
 プロセスの失敗時に<code>reject()</code>をコールすることで次の<code>fail</code>プロセスにヘッドが移ります。
 また、<code>reject()</code>メソッドの引数にセットした値は、次の<code>fail</code>プロセスの引数として引き継がれます。</p>
@@ -164,35 +161,23 @@ zazenはcodeのreadabilityを保ちます。</p>
     console.log(err);
   });</pre></div>
         
-      
-        
-        <h2 id="run-tasks-serially">Run tasks serially</h2>
+        <h3 id="run-tasks-serially">Run tasks serially</h3>
 
         
-      
-        
-        <h2 id="run-tasks-parallely">Run tasks parallely</h2>
+        <h3 id="run-tasks-parallely">Run tasks parallely</h3>
 
         
-      
-        
-        <h2 id="handle-errors">Handle errors</h2>
+        <h3 id="handle-errors">Handle errors</h3>
 
         
-      
-        
-        <h2 id="recover-error">Recover error</h2>
+        <h3 id="recover-error">Recover error</h3>
 
         
-      
-        
-        <h2 id="utilities">Utilities</h2>
+        <h3 id="utilities">Utilities</h3>
 <p>zazenにはフローを簡単に扱うためのいくつかのユーティリティが実装されています。</p>
 
         
-      
-        
-        <h3 id="the-wait-">The.wait()</h3>
+        <h4 id="the-wait-">The.wait()</h4>
 <p><code>setTimeout</code>のzazen実装です。設定したミリ秒後に次の<code>then</code>プロセスにヘッドが移ります。</p>
 
         
@@ -201,8 +186,6 @@ zazenはcodeのreadabilityを保ちます。</p>
   .then(<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">()</span> {</span>
     console.log(<span class="hljs-string">'1sec left'</span>);
   });</pre></div>
-        
-      
         
         <p>また、<code>The.then()</code>と同様に<code>then</code>プロセスで<code>return</code>することで同じ効果を期待できます。
 この方法はプロセスの実行時まで遅延時間を決定できない時等に用います。</p>
@@ -219,9 +202,7 @@ zazenはcodeのreadabilityを保ちます。</p>
     console.log(<span class="hljs-string">'1src or 5sec left'</span>);
   });</pre></div>
         
-      
-        
-        <h3 id="pomisify-">pomisify()</h3>
+        <h4 id="pomisify-">pomisify()</h4>
 <p>zazenをNodeで使うとき、<code>promisify()</code>というユーティリティが役に立ちます。
 これは<code>function (err, result) {}</code>のようなcallbackを引数とする非同期なNodeのmethodをzazenのスタイルにwrapします。</p>
 
@@ -237,9 +218,7 @@ readFile(<span class="hljs-string">'data/a.json'</span>)
     console.log(data);
   });</pre></div>
         
-      
-        
-        <h2 id="use-with-underscore-or-lo-dash">Use with underscore or lo-dash</h2>
+        <h3 id="use-with-underscore-or-lo-dash">Use with underscore or lo-dash</h3>
 
         
           <div class='highlight'><pre>The
@@ -251,9 +230,7 @@ readFile(<span class="hljs-string">'data/a.json'</span>)
     console.log(objects);
   });</pre></div>
         
-      
-        
-        <h2 id="distributions">Distributions</h2>
+        <h3 id="distributions">Distributions</h3>
 <table>
 <thead>
 <tr>
@@ -277,13 +254,13 @@ readFile(<span class="hljs-string">'data/a.json'</span>)
 </table>
 
         
-      
+        <h2 id="copyright">Copyright</h2>
+
         
-        <h2 id="documentation-authers">Documentation authers</h2>
+        <h3 id="documentation-authers">Documentation authers</h3>
 <p><a href="https://github.com/minodisk">Daisuke Mino</a></p>
 
         
-      
       <div class="fleur">h</div>
     </div>
   </div>

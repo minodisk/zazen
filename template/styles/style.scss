@@ -1,0 +1,61 @@
+body {
+  font-size: 14px;
+  line-height: 22px;
+}
+
+.sidebar {
+  background: #fff;
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 200px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  padding: 15px 0 30px 30px;
+  border-right: 1px solid #bbb;
+  box-shadow: 0 0 20px #ccc;
+  -webkit-box-shadow: 0 0 20px #ccc;
+  -moz-box-shadow: 0 0 20px #ccc;
+}
+
+dl.toc {
+  line-height: 14px;
+  margin: 5px 0 0 0;
+  padding-left: 0px;
+  list-style-type: none;
+  font-family: Lucida Grande;
+  a {
+    &.is-current {
+      color: #259dff;
+    }
+  }
+
+  dt {
+    font-weight: bold;
+    margin: 15px 0 5px;
+  }
+
+  dd {
+    font-size: 11px;
+    margin: 3px 0 0 0;
+    a {
+      text-decoration: none;
+      &:hover {
+        span {
+          text-decoration: underline;
+        }
+      }
+      &:before {
+        content: '-';
+        padding-right: 3px;
+      }
+      &.external {
+        &:before {
+          content: '»';
+        }
+      }
+    }
+  }
+}

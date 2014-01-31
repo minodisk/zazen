@@ -1,31 +1,7 @@
 // # Zazen
 // zazenは`The`と`then`その他の少しのキーワードで構成される、asynchronous processをchainするライブラリです。
 
-// ## Include
-// Node
-
-var zazen = require('zazen')
-  , The = zazen.The
-  ;
-
-// browser
-// - standalone
-// ```html
-// <script src="path/to/zazen.js">
-// <script>
-// var The = zazen.The;
-// </script>
-// ```
-// - with jQuery
-// ```html
-// <script src="path/to/jquery.js">
-// <script src="path/to/jquery.zazen.js">
-// <script>
-// var The = zazen.The;
-// </script>
-// ```
-
-// ## Escape from callback hell
+// ### Escape from callback hell
 
 var wait = function (duration, callback) {
     setTimeout(callback, duration);
@@ -56,7 +32,33 @@ The
     console.log(3);
   });
 
-// ## Resolve process
+// ## Usage
+
+// ### Include
+// Node
+
+var zazen = require('zazen')
+  , The = zazen.The
+  ;
+
+// browser
+// - standalone
+// ```html
+// <script src="path/to/zazen.js">
+// <script>
+// var The = zazen.The;
+// </script>
+// ```
+// - with jQuery
+// ```html
+// <script src="path/to/jquery.js">
+// <script src="path/to/jquery.zazen.js">
+// <script>
+// var The = zazen.The;
+// </script>
+// ```
+
+// ### Resolve process
 // 非同期なプロセスを扱うときは`resolve`というキーワードの引数を設定します。
 // プロセスの完了時に`resolve()`をコールすることで次の`then`プロセスにヘッドが移ります。
 // また、`resolve()`メソッドの引数にセットした値は、次の`then`プロセスの引数として引き継がれます。
@@ -70,7 +72,7 @@ The
     console.log(arg); // > 'done'
   });
 
-// ## Reject process
+// ### Reject process
 // 失敗する可能性のあるプロセスの場合は`reject`というキーワードの引数を設定します。
 // プロセスの失敗時に`reject()`をコールすることで次の`fail`プロセスにヘッドが移ります。
 // また、`reject()`メソッドの引数にセットした値は、次の`fail`プロセスの引数として引き継がれます。
@@ -86,18 +88,18 @@ The
     console.log(err);
   });
 
-// ## Run tasks serially
+// ### Run tasks serially
 
-// ## Run tasks parallely
+// ### Run tasks parallely
 
-// ## Handle errors
+// ### Handle errors
 
-// ## Recover error
+// ### Recover error
 
-// ## Utilities
+// ### Utilities
 // zazenにはフローを簡単に扱うためのいくつかのユーティリティが実装されています。
 
-// ### The.wait()
+// #### The.wait()
 // `setTimeout`のzazen実装です。設定したミリ秒後に次の`then`プロセスにヘッドが移ります。
 The
   .wait(1000)
@@ -117,7 +119,7 @@ The
     console.log('1src or 5sec left');
   });
 
-// ### pomisify()
+// #### pomisify()
 // zazenをNodeで使うとき、`promisify()`というユーティリティが役に立ちます。
 // これは`function (err, result) {}`のようなcallbackを引数とする非同期なNodeのmethodをzazenのスタイルにwrapします。
 var promisify = zazen.promisify
@@ -131,7 +133,7 @@ readFile('data/a.json')
     console.log(data);
   });
 
-// ## Use with underscore or lo-dash
+// ### Use with underscore or lo-dash
 The
   .parallel(_.map(['data/a.json', 'data/b.json', 'data/c.json'], fs.readFile))
   .then(_.map, function (json) {
@@ -141,11 +143,13 @@ The
     console.log(objects);
   });
 
-// ## Distributions
+// ### Distributions
 // | | *development* | *production* |
 // |:-----|:-----:|:-----:|
 // | *Standalone* | [zazen.js](https://raw.github.com/minodisk/zazen/master/jquery.zazen.js) | - |
 // | *jQuery plugin* | [jquery.zazen.js](https://raw.github.com/minodisk/zazen/master/jquery.zazen.js) | - |
 
-// ## Documentation authers
+// ## Copyright
+
+// ### Documentation authers
 // [Daisuke Mino](https://github.com/minodisk)

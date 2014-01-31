@@ -3,41 +3,46 @@
 <head>
   <title><%= title %></title>
   <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-  <link rel="stylesheet" media="all" href="public/stylesheets/normalize.css" />
+  <link rel="stylesheet" media="all" href="styles/normalize.css" />
   <link rel="stylesheet" media="all" href="<%= css %>" />
+  <link rel="stylesheet" media="all" href="styles/style.css" />
   <script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
-  <script src="public/scripts/main.js"></script>
+  <script src="scripts/main.js"></script>
 </head>
 <body>
   <aside class="sidebar">
-    <% if (sources.length > 1) { %>
-      <div class="toc">
-        <h3>Table of Contents</h3>
-        <ol>
-          <% for (var i=0, l = sources.length; i < l; i++) { %>
-            <% var source = sources[i]; %>
-            <li>
-              <a class="source" href="<%= path.basename(destination(source)) %>">
-                <%= path.basename(source) %>
-              </a>
-            </li>
-          <% } %>
-        </ol>
-      </div>
-    <% } %>
-
-    <% if (sections.length > 1) { %>
-      <ul class="toc_section">
-      <% sections.forEach(function (section) {
-        if (result = section.docsHtml.match(/<h2 id="(.*?)">(.*)<\/h2>/)) { %>
-        <li><a href="#<%= result[1] %>"><%= result[2] %></a></li>
-      <% }}); %>
-      </ul>
-    <% } %>
+  <%
+  if (sections.length > 1) {
+  %>
+    <dl class="toc">
+      <dt><a href="#"><span>zazen</span></a></dt>
+      <dd><a href="https://github.com/minodisk/zazen" class="external"><span>GitHub Repositories</span></a></dd>
+      <dt><a href="#"><span>Introduction</span></a></dt>
+    <%
+    sections.forEach(function (section) {
+      if (result = section.docsHtml.match(/<h(\d) id="(.*?)">(.*)<\/h\d>/)) {
+        switch (parseInt(result[1], 10)) {
+          case 2:
+          %>
+          <dt><a href="#<%= result[2] %>"><span><%= result[3] %></span></a></dt>
+          <%
+            break;
+          case 3:
+          %>
+          <dd><a href="#<%= result[2] %>"><span><%= result[3] %></span></a></dd>
+          <%
+            break;
+        }
+      }
+    });
+    %>
+    </dl>
+  <%
+  }
+  %>
   </aside>
   <div class="container">
     <div class="page">
-
       <div class="header">
         <% if (hasTitle) { %>
           <% var section = sections.shift(); %>
@@ -50,13 +55,19 @@
         <% } %>
       </div>
 
-      <% for (var i = 0, l = sections.length; i<l; i++) { %>
-        <% var section = sections[i]; %>
+      <%
+      for (var i = 0, l = sections.length; i<l; i++) {
+        var section = sections[i];
+        %>
         <%= section.docsHtml %>
-        <% if (!(/^\s*$/).test(section.codeText)) { %>
+        <%
+        if (!(/^\s*$/).test(section.codeText)) {
+        %>
           <%= section.codeHtml %>
-        <% } %>
-      <% } %>
+        <%
+        }
+      }
+      %>
       <div class="fleur">h</div>
     </div>
   </div>
