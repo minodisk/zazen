@@ -16,8 +16,9 @@ wait(1000, function () {
     });
   });
 });
-// callbackを使って書く非同期処理はdeep nestでreadabilityを失います。
-// zazenはcodeのreadabilityを保ちます。
+// コールバックスタイルの非同期処理は深いネストのせいでリーダビリティを失いがちで、
+// エラーハンドリングも煩雑になりがちです。
+// zazenはこれらの問題を解決するためのスマートな方法を提供します。
 The
   .wait(1000)
   .then(function () {
@@ -32,24 +33,35 @@ The
     console.log(3);
   });
 
-// ## Usage
+// ### Distributions
+// | | *development* | *production* |
+// |:-----|:-----:|:-----:|
+// | *Standalone* | [zazen.js](https://raw.github.com/minodisk/zazen/master/jquery.zazen.js) | - |
+// | *jQuery plugin* | [jquery.zazen.js](https://raw.github.com/minodisk/zazen/master/jquery.zazen.js) | - |
 
-// ### Include
-// Node
+// ### Install with package manager
+// #### Npm
+// ```sh
+// npm install zazen
+// ```
+// #### Bower
+// ```sh
+// bower install zazen
+// ```
 
+// ### Include into your project
+// #### Node
 var zazen = require('zazen')
   , The = zazen.The
   ;
-
-// browser
-// - standalone
+// #### Standalone in browser
 // ```html
 // <script src="path/to/zazen.js">
 // <script>
 // var The = zazen.The;
 // </script>
 // ```
-// - with jQuery
+// #### jQuery plugin in browser
 // ```html
 // <script src="path/to/jquery.js">
 // <script src="path/to/jquery.zazen.js">
@@ -58,48 +70,19 @@ var zazen = require('zazen')
 // </script>
 // ```
 
-// ### Resolve process
-// 非同期なプロセスを扱うときは`resolve`というキーワードの引数を設定します。
-// プロセスの完了時に`resolve()`をコールすることで次の`then`プロセスにヘッドが移ります。
-// また、`resolve()`メソッドの引数にセットした値は、次の`then`プロセスの引数として引き継がれます。
-The
-  .then(function (resolve) {
-    setTimeout(function () {
-      resolve('done');
-    }, 1000);
-  })
-  .then(function (arg) {
-    console.log(arg); // > 'done'
-  });
+// ## APIs
 
-// ### Reject process
-// 失敗する可能性のあるプロセスの場合は`reject`というキーワードの引数を設定します。
-// プロセスの失敗時に`reject()`をコールすることで次の`fail`プロセスにヘッドが移ります。
-// また、`reject()`メソッドの引数にセットした値は、次の`fail`プロセスの引数として引き継がれます。
-The
-  .then(function (reject) {
-    require('fs').readFile('data/null.json', function (err, data) {
-      if (err != null) {
-        reject(err);
-      }
-    });
-  })
-  .fail(function (err) {
-    console.log(err);
-  });
+// ### The
 
-// ### Run tasks serially
+// ### then(function)
 
-// ### Run tasks parallely
+// ### then(the)
 
-// ### Handle errors
+// ### then([function, ...])
 
-// ### Recover error
+// ### fail(function)
 
-// ### Utilities
-// zazenにはフローを簡単に扱うためのいくつかのユーティリティが実装されています。
-
-// #### The.wait()
+// ### wait(delay)
 // `setTimeout`のzazen実装です。設定したミリ秒後に次の`then`プロセスにヘッドが移ります。
 The
   .wait(1000)
@@ -119,7 +102,41 @@ The
     console.log('1src or 5sec left');
   });
 
-// #### pomisify()
+// #### Handle errors
+
+// #### Recover error
+
+// ### \[then|fail\](function (resolve) {})
+// 非同期なプロセスを扱うときは`resolve`というキーワードの引数を設定します。
+// プロセスの完了時に`resolve()`をコールすることで次の`then`プロセスにヘッドが移ります。
+// また、`resolve()`メソッドの引数にセットした値は、次の`then`プロセスの引数として引き継がれます。
+The
+  .then(function (resolve) {
+    setTimeout(function () {
+      resolve('done');
+    }, 1000);
+  })
+  .then(function (arg) {
+    console.log(arg); // > 'done'
+  });
+
+// ### \[then|fail\](function (reject) {})
+// 失敗する可能性のあるプロセスの場合は`reject`というキーワードの引数を設定します。
+// プロセスの失敗時に`reject()`をコールすることで次の`fail`プロセスにヘッドが移ります。
+// また、`reject()`メソッドの引数にセットした値は、次の`fail`プロセスの引数として引き継がれます。
+The
+  .then(function (reject) {
+    require('fs').readFile('data/null.json', function (err, data) {
+      if (err != null) {
+        reject(err);
+      }
+    });
+  })
+  .fail(function (err) {
+    console.log(err);
+  });
+
+// ### pomisify(function)
 // zazenをNodeで使うとき、`promisify()`というユーティリティが役に立ちます。
 // これは`function (err, result) {}`のようなcallbackを引数とする非同期なNodeのmethodをzazenのスタイルにwrapします。
 var promisify = zazen.promisify
@@ -133,7 +150,10 @@ readFile('data/a.json')
     console.log(data);
   });
 
-// ### Use with underscore or lo-dash
+
+// ## Cookbook
+
+// ### With underscore or lo-dash
 The
   .parallel(_.map(['data/a.json', 'data/b.json', 'data/c.json'], fs.readFile))
   .then(_.map, function (json) {
@@ -143,11 +163,6 @@ The
     console.log(objects);
   });
 
-// ### Distributions
-// | | *development* | *production* |
-// |:-----|:-----:|:-----:|
-// | *Standalone* | [zazen.js](https://raw.github.com/minodisk/zazen/master/jquery.zazen.js) | - |
-// | *jQuery plugin* | [jquery.zazen.js](https://raw.github.com/minodisk/zazen/master/jquery.zazen.js) | - |
 
 // ## Copyright
 
