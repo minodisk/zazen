@@ -20,7 +20,7 @@ $document.one 'ready', ->
     i = length
     while i--
       $title = $ $titles[i]
-      if ($title.offset().top >> 0) <= top
+      if ($title.position().top >> 0) <= top
         $link = $title.data '$link'
         break
     $links.removeClass 'is-current'
