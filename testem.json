@@ -1,27 +1,27 @@
 {
   "framework": "mocha",
-  "src_files": [
-    "jquery.zazen.js",
-    "tests/src/*.coffee"
-  ],
-  "serve_files": [
-    "bower_components/jquery/jquery.js",
-    "jquery.zazen.js",
-    "node_modules/expect.js/expect.js",
-    "tests/browser_test.js"
-  ],
   "launchers": {
-    "Mocha": {
-      "command": "node_modules/.bin/mocha tests/node_test.js -R tap",
+    "npm test": {
+      "command": "npm test",
       "protocol": "tap"
     }
   },
   "launch_in_dev": [
+    "npm test",
     "Safari",
     "Firefox",
-    "Chrome",
-    "Mocha"
+    "Chrome"
   ],
-  "before_tests": "grunt before_tests",
-  "after_tests": "grunt after_tests"
+  "src_files": [
+    "jquery.zazen.js",
+    "tests/*.coffee"
+  ],
+  "before_tests": "coffee -c tests/test.coffee",
+  "serve_files": [
+    "bower_components/jquery/jquery.js",
+    "jquery.zazen.js",
+    "node_modules/expect.js/expect.js",
+    "tests/test.js"
+  ],
+  "after_tests": "rm tests/test.js"
 }

@@ -1,3 +1,6 @@
+expect = require '../node_modules/expect.js'
+{ The, promisify } = require '../zazen'
+
 fs = require 'fs'
 path = require 'path'
 
