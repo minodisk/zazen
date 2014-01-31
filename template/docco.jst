@@ -1,13 +1,40 @@
 <!DOCTYPE html>
-
 <html>
 <head>
   <title><%= title %></title>
   <meta http-equiv="content-type" content="text/html; charset=UTF-8">
   <link rel="stylesheet" media="all" href="public/stylesheets/normalize.css" />
   <link rel="stylesheet" media="all" href="<%= css %>" />
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+  <script src="public/scripts/main.js"></script>
 </head>
 <body>
+  <aside class="sidebar">
+    <% if (sources.length > 1) { %>
+      <div class="toc">
+        <h3>Table of Contents</h3>
+        <ol>
+          <% for (var i=0, l = sources.length; i < l; i++) { %>
+            <% var source = sources[i]; %>
+            <li>
+              <a class="source" href="<%= path.basename(destination(source)) %>">
+                <%= path.basename(source) %>
+              </a>
+            </li>
+          <% } %>
+        </ol>
+      </div>
+    <% } %>
+
+    <% if (sections.length > 1) { %>
+      <ul class="toc_section">
+      <% sections.forEach(function (section) {
+        if (result = section.docsHtml.match(/<h2 id="(.*?)">(.*)<\/h2>/)) { %>
+        <li><a href="#<%= result[1] %>"><%= result[2] %></a></li>
+      <% }}); %>
+      </ul>
+    <% } %>
+  </aside>
   <div class="container">
     <div class="page">
 
@@ -20,22 +47,6 @@
           <% } %>
         <% } else { %>
           <h1><%= title %></h1>
-        <% } %>
-
-        <% if (sources.length > 1) { %>
-          <div class="toc">
-            <h3>Table of Contents</h3>
-            <ol>
-              <% for (var i=0, l = sources.length; i < l; i++) { %>
-                <% var source = sources[i]; %>
-                <li>
-                  <a class="source" href="<%= path.basename(destination(source)) %>">
-                    <%= path.basename(source) %>
-                  </a>
-                </li>
-              <% } %>
-            </ol>
-          </div>
         <% } %>
       </div>
 

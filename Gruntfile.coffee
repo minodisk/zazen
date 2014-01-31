@@ -7,46 +7,53 @@ module.exports = (grunt) ->
       site: {}
 
     watch:
-      docs:
-        files: [
-          'src/**/*.js'
-        ]
-        tasks: [ 'docs' ]
       html:
         files: [
           'docs/**/*.html'
         ]
         options:
           livereload: true
+      docs:
+        files: [
+          'src/**/*.js'
+          'template/**/*'
+        ]
+        tasks: [
+          'docs'
+        ]
+      scripts:
+        files: [
+          'template/public/scripts/*.coffee'
+        ]
+        tasks: [
+          'scripts'
+        ]
 
-#    coffee:
-#      docs:
-#        options:
-#          bare: true
-#          literate: true
-#        expand: true,
-#        flatten: true,
-#        cwd: 'src',
-#        src: [ '*.js' ],
-#        dest: 'src',
-#        ext: '.js'
+    coffee:
+      scripts:
+        expand: true,
+        flatten: true,
+        cwd: 'template/public/scripts',
+        src: [ '*.coffee' ],
+        dest: 'docs/public/scripts',
+        ext: '.js'
 
     docco:
       docs:
         src: [ 'src/**/*.js' ]
         options:
-#          layout: 'linear'
           css: 'template/docco.css'
           template: 'template/docco.jst'
 
 
   grunt.loadNpmTasks 'grunt-contrib-watch'
   grunt.loadNpmTasks 'grunt-contrib-connect'
-#  grunt.loadNpmTasks 'grunt-contrib-coffee'
+  grunt.loadNpmTasks 'grunt-contrib-coffee'
   grunt.loadNpmTasks 'grunt-docco'
 
   grunt.registerTask 'default', [
     'docs'
+    'scripts'
     'connect'
     'watch'
   ]
@@ -54,6 +61,9 @@ module.exports = (grunt) ->
 #    'coffee:docs'
 #    'doctest'
     'docco:docs'
+  ]
+  grunt.registerTask 'scripts', [
+    'coffee:scripts'
   ]
 #  grunt.registerTask 'doctest', ->
 #    done = @async()

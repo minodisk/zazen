@@ -138,11 +138,13 @@ pre, tt, code {
 /*--------------------- Layout ----------------------------*/
 
 .container {
-  width: 760px;
-  margin: 0 auto;
-  background: #fff;
-  background: rgba(255,255,255, 0.4);
-  overflow: hidden;
+  /*width: 760px;*/
+  /*margin: 0 auto;*/
+  /*background: #fff;*/
+  /*background: rgba(255,255,255, 0.4);*/
+  /*overflow: hidden;*/
+  width: 550px;
+  margin: 40px 0 50px 260px;
 }
   .page {
     width: 640px;
@@ -334,4 +336,41 @@ pre .hljs-chunk {
 
 pre .hljs-tex .hljs-formula {
   opacity: 0.5;
+}
+
+.sidebar {
+  background: #fff;
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 200px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  padding: 15px 0 30px 30px;
+  border-right: 1px solid #bbb;
+  box-shadow: 0 0 20px #ccc;
+  -webkit-box-shadow: 0 0 20px #ccc;
+  -moz-box-shadow: 0 0 20px #ccc;
+}
+
+ul.toc_section {
+  font-size: 11px;
+  line-height: 14px;
+  margin: 5px 0 0 0;
+  padding-left: 0px;
+  list-style-type: none;
+  font-family: Lucida Grande;
+}
+
+ul.toc_section li a {
+  text-decoration: none;
+  color: #7B838A;
+}
+ul.toc_section li a:hover {
+  text-decoration: underline;
+}
+ul.toc_section li a.is-current {
+  color: #259dff;
 }

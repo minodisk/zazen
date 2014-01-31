@@ -1,13 +1,47 @@
 <!DOCTYPE html>
-
 <html>
 <head>
   <title>Zazen</title>
   <meta http-equiv="content-type" content="text/html; charset=UTF-8">
   <link rel="stylesheet" media="all" href="public/stylesheets/normalize.css" />
   <link rel="stylesheet" media="all" href="docco.css" />
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+  <script src="public/scripts/main.js"></script>
 </head>
 <body>
+  <aside class="sidebar">
+    
+
+    
+      <ul class="toc_section">
+      
+        <li><a href="#include">Include</a></li>
+      
+        <li><a href="#escape-from-callback-hell">Escape from callback hell</a></li>
+      
+        <li><a href="#resolve-process">Resolve process</a></li>
+      
+        <li><a href="#reject-process">Reject process</a></li>
+      
+        <li><a href="#run-tasks-serially">Run tasks serially</a></li>
+      
+        <li><a href="#run-tasks-parallely">Run tasks parallely</a></li>
+      
+        <li><a href="#handle-errors">Handle errors</a></li>
+      
+        <li><a href="#recover-error">Recover error</a></li>
+      
+        <li><a href="#utilities">Utilities</a></li>
+      
+        <li><a href="#use-with-underscore-or-lo-dash">Use with underscore or lo-dash</a></li>
+      
+        <li><a href="#distributions">Distributions</a></li>
+      
+        <li><a href="#documentation-authers">Documentation authers</a></li>
+      
+      </ul>
+    
+  </aside>
   <div class="container">
     <div class="page">
 
@@ -15,12 +49,9 @@
         
           
           <h1 id="zazen">Zazen</h1>
-<p>zazenはあなたのコードをreadableにします。
-zazenは<code>The</code>と<code>then</code>その他の少しのキーワードで構成される、asynchronous processをchainするライブラリです。</p>
+<p>zazenは<code>The</code>と<code>then</code>その他の少しのキーワードで構成される、asynchronous processをchainするライブラリです。</p>
 
           
-        
-
         
       </div>
 
@@ -31,7 +62,7 @@ zazenは<code>The</code>と<code>then</code>その他の少しのキーワード
 
         
           <div class='highlight'><pre>
-<span class="hljs-keyword">var</span> zazen = <span class="hljs-built_in">require</span>(<span class="hljs-string">'../zazen'</span>)
+<span class="hljs-keyword">var</span> zazen = <span class="hljs-built_in">require</span>(<span class="hljs-string">'zazen'</span>)
   , The = zazen.The
   ;</pre></div>
         
@@ -97,48 +128,40 @@ zazenはcodeのreadabilityを保ちます。</p>
         
       
         
-        <h2 id="resolve-async-process">Resolve async process</h2>
+        <h2 id="resolve-process">Resolve process</h2>
 <p>非同期なプロセスを扱うときは<code>resolve</code>というキーワードの引数を設定します。
-プロセスの完了時に<code>resolve()</code>をコールすることで次の<code>then</code>プロセスにヘッドが移ります。</p>
+プロセスの完了時に<code>resolve()</code>をコールすることで次の<code>then</code>プロセスにヘッドが移ります。
+また、<code>resolve()</code>メソッドの引数にセットした値は、次の<code>then</code>プロセスの引数として引き継がれます。</p>
 
         
           <div class='highlight'><pre>The
   .then(<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">(resolve)</span> {</span>
     setTimeout(<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">()</span> {</span>
-      resolve();
+      resolve(<span class="hljs-string">'done'</span>);
     }, <span class="hljs-number">1000</span>);
   })
-  .then(<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">()</span> {</span>
-    console.log(<span class="hljs-string">'done async process'</span>);
+  .then(<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">(arg)</span> {</span>
+    console.log(arg); <span class="hljs-comment">// &gt; 'done'</span>
   });</pre></div>
-        
-      
-        
-        <p>また、<code>resolve()</code>メソッドには次の<code>then</code></p>
-
         
       
         
         <h2 id="reject-process">Reject process</h2>
 <p>失敗する可能性のあるプロセスの場合は<code>reject</code>というキーワードの引数を設定します。
-プロセスの失敗時に<code>reject()</code>をコールすることで次の<code>fail</code>プロセスにヘッドが移ります。</p>
+プロセスの失敗時に<code>reject()</code>をコールすることで次の<code>fail</code>プロセスにヘッドが移ります。
+また、<code>reject()</code>メソッドの引数にセットした値は、次の<code>fail</code>プロセスの引数として引き継がれます。</p>
 
         
           <div class='highlight'><pre>The
-  .then(<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">(reject, resolve)</span> {</span>
+  .then(<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">(reject)</span> {</span>
     <span class="hljs-built_in">require</span>(<span class="hljs-string">'fs'</span>).readFile(<span class="hljs-string">'data/null.json'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">(err, data)</span> {</span>
       <span class="hljs-keyword">if</span> (err != <span class="hljs-literal">null</span>) {
         reject(err);
-      } <span class="hljs-keyword">else</span> {
-        resolve(err);
       }
     });
   })
   .fail(<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">(err)</span> {</span>
     console.log(err);
-  })
-  .then(<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">()</span> {</span>
-
   });</pre></div>
         
       
@@ -163,7 +186,42 @@ zazenはcodeのreadabilityを保ちます。</p>
         
       
         
-        <h2 id="pomisify">Pomisify</h2>
+        <h2 id="utilities">Utilities</h2>
+<p>zazenにはフローを簡単に扱うためのいくつかのユーティリティが実装されています。</p>
+
+        
+      
+        
+        <h3 id="the-wait-">The.wait()</h3>
+<p><code>setTimeout</code>のzazen実装です。設定したミリ秒後に次の<code>then</code>プロセスにヘッドが移ります。</p>
+
+        
+          <div class='highlight'><pre>The
+  .wait(<span class="hljs-number">1000</span>)
+  .then(<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">()</span> {</span>
+    console.log(<span class="hljs-string">'1sec left'</span>);
+  });</pre></div>
+        
+      
+        
+        <p>また、<code>The.then()</code>と同様に<code>then</code>プロセスで<code>return</code>することで同じ効果を期待できます。
+この方法はプロセスの実行時まで遅延時間を決定できない時等に用います。</p>
+
+        
+          <div class='highlight'><pre>The
+  .then(<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">()</span> {</span>
+    <span class="hljs-keyword">if</span> (shouldWaitLongTime) {
+      <span class="hljs-keyword">return</span> The.wait(<span class="hljs-number">5000</span>);
+    }
+    <span class="hljs-keyword">return</span> The.wait(<span class="hljs-number">1000</span>);
+  })
+  .then(<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">()</span> {</span>
+    console.log(<span class="hljs-string">'1src or 5sec left'</span>);
+  });</pre></div>
+        
+      
+        
+        <h3 id="pomisify-">pomisify()</h3>
 <p>zazenをNodeで使うとき、<code>promisify()</code>というユーティリティが役に立ちます。
 これは<code>function (err, result) {}</code>のようなcallbackを引数とする非同期なNodeのmethodをzazenのスタイルにwrapします。</p>
 
@@ -195,7 +253,34 @@ readFile(<span class="hljs-string">'data/a.json'</span>)
         
       
         
-        <h2 id="distributions">distributions</h2>
+        <h2 id="distributions">Distributions</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align:left"></th>
+<th style="text-align:center"><em>development</em></th>
+<th style="text-align:center"><em>production</em></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><em>Standalone</em></td>
+<td style="text-align:center"><a href="https://raw.github.com/minodisk/zazen/master/jquery.zazen.js">zazen.js</a></td>
+<td style="text-align:center">-</td>
+</tr>
+<tr>
+<td style="text-align:left"><em>jQuery plugin</em></td>
+<td style="text-align:center"><a href="https://raw.github.com/minodisk/zazen/master/jquery.zazen.js">jquery.zazen.js</a></td>
+<td style="text-align:center">-</td>
+</tr>
+</tbody>
+</table>
+
+        
+      
+        
+        <h2 id="documentation-authers">Documentation authers</h2>
+<p><a href="https://github.com/minodisk">Daisuke Mino</a></p>
 
         
       
