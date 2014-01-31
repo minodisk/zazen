@@ -13,7 +13,7 @@ module.exports = (grunt) ->
         ]
       test:
         files: [
-          'test/src/*.coffee'
+          'tests/src/*.coffee'
         ]
         tasks: [
           'test'
@@ -22,18 +22,18 @@ module.exports = (grunt) ->
     concat:
       'test-browser':
         src: [
-          'test/src/browser0.coffee'
-          'test/src/test.coffee'
-          'test/src/browser1.coffee'
+          'tests/src/browser0.coffee'
+          'tests/src/test.coffee'
+          'tests/src/browser1.coffee'
         ]
-        dest: 'test/browser_test.coffee'
+        dest: 'tests/browser_test.coffee'
       'test-node':
         src: [
-          'test/src/node0.coffee'
-          'test/src/test.coffee'
-          'test/src/node1.coffee'
+          'tests/src/node0.coffee'
+          'tests/src/test.coffee'
+          'tests/src/node1.coffee'
         ]
-        dest: 'test/node_test.coffee'
+        dest: 'tests/node_test.coffee'
 
     coffee:
       main:
@@ -49,13 +49,13 @@ module.exports = (grunt) ->
           ]
       test:
         files:
-          'test/browser_test.js': 'test/browser_test.coffee'
-          'test/node_test.js': 'test/node_test.coffee'
+          'tests/browser_test.js': 'tests/browser_test.coffee'
+          'tests/node_test.js': 'tests/node_test.coffee'
 
     clean:
       test: [
-        'test/browser_test.coffee'
-        'test/node_test.coffee'
+        'tests/*.coffee'
+        'tests/*.js'
       ]
 
     bump:
@@ -85,19 +85,21 @@ module.exports = (grunt) ->
   grunt.registerTask 'main', [
     'coffee:main'
   ]
-  grunt.registerTask 'test', [
-    'concat:test-browser'
-    'concat:test-node'
-    'coffee:test'
-    'clean:test'
-  ]
   grunt.registerTask 'run', [
     'main'
-    'test'
   ]
   grunt.registerTask 'default', [
     'run'
     'watch'
+  ]
+
+  grunt.registerTask 'before_tests', [
+    'concat:test-browser'
+    'concat:test-node'
+    'coffee:test'
+  ]
+  grunt.registerTask 'after_tests', [
+    'clean:test'
   ]
 
   grunt.registerTask 'publish', [
