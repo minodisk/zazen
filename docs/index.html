@@ -39,10 +39,6 @@
           
           <dd><a href="#wait-delay-"><span>wait(delay)</span></a></dd>
           
-          <dd><a href="#-then-fail-function-resolve-"><span>[then|fail](function (resolve) {})</span></a></dd>
-          
-          <dd><a href="#-then-fail-function-reject-"><span>[then|fail](function (reject) {})</span></a></dd>
-          
           <dd><a href="#pomisify-function-"><span>pomisify(function)</span></a></dd>
           
           <dt><a href="#cookbook"><span>Cookbook</span></a></dt>
@@ -169,7 +165,48 @@ zazenはこれらの問題を解決するためのスマートな方法を提供
 
         
         <h3 id="then-function-">then(function)</h3>
+<p>非同期なプロセスを扱うときは<code>resolve</code>というキーワードの引数を設定します。
+プロセスの完了時に<code>resolve()</code>をコールすることで次の<code>then</code>プロセスにヘッドが移ります。
+また、<code>resolve()</code>メソッドの引数にセットした値は、次の<code>then</code>プロセスの引数として引き継がれます。</p>
 
+        
+          <div class='highlight'><pre>The
+  .then(<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">(resolve)</span> {</span>
+    setTimeout(<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">()</span> {</span>
+      resolve(<span class="hljs-string">'done'</span>);
+    }, <span class="hljs-number">1000</span>);
+  })
+  .then(<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">(arg)</span> {</span>
+    console.log(arg); <span class="hljs-comment">// &gt; 'done'</span>
+  });</pre></div>
+        
+        <p>同期的なプロセスで且つ次のプロセスに値を渡す必要のないとき、<em>resolve</em> キーワードを省略することができます。</p>
+
+        
+          <div class='highlight'><pre>The
+  .then(<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">()</span> {</span>
+    console.log(<span class="hljs-number">1</span>); <span class="hljs-comment">// &gt; 1</span>
+  })
+  .then(<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">()</span> {</span>
+    console.log(<span class="hljs-number">2</span>); <span class="hljs-comment">// &gt; 2</span>
+  });</pre></div>
+        
+        <p>失敗する可能性のあるプロセスの場合は<code>reject</code>というキーワードの引数を設定します。
+プロセスの失敗時に<code>reject()</code>をコールすることで次の<code>fail</code>プロセスにヘッドが移ります。
+また、<code>reject()</code>メソッドの引数にセットした値は、次の<code>fail</code>プロセスの引数として引き継がれます。</p>
+
+        
+          <div class='highlight'><pre>The
+  .then(<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">(reject)</span> {</span>
+    <span class="hljs-built_in">require</span>(<span class="hljs-string">'fs'</span>).readFile(<span class="hljs-string">'data/null.json'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">(err, data)</span> {</span>
+      <span class="hljs-keyword">if</span> (err != <span class="hljs-literal">null</span>) {
+        reject(err);
+      }
+    });
+  })
+  .fail(<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">(err)</span> {</span>
+    console.log(err);
+  });</pre></div>
         
         <h3 id="then-the-">then(the)</h3>
 
@@ -210,40 +247,6 @@ zazenはこれらの問題を解決するためのスマートな方法を提供
         
         <h4 id="recover-error">Recover error</h4>
 
-        
-        <h3 id="-then-fail-function-resolve-">[then|fail](function (resolve) {})</h3>
-<p>非同期なプロセスを扱うときは<code>resolve</code>というキーワードの引数を設定します。
-プロセスの完了時に<code>resolve()</code>をコールすることで次の<code>then</code>プロセスにヘッドが移ります。
-また、<code>resolve()</code>メソッドの引数にセットした値は、次の<code>then</code>プロセスの引数として引き継がれます。</p>
-
-        
-          <div class='highlight'><pre>The
-  .then(<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">(resolve)</span> {</span>
-    setTimeout(<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">()</span> {</span>
-      resolve(<span class="hljs-string">'done'</span>);
-    }, <span class="hljs-number">1000</span>);
-  })
-  .then(<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">(arg)</span> {</span>
-    console.log(arg); <span class="hljs-comment">// &gt; 'done'</span>
-  });</pre></div>
-        
-        <h3 id="-then-fail-function-reject-">[then|fail](function (reject) {})</h3>
-<p>失敗する可能性のあるプロセスの場合は<code>reject</code>というキーワードの引数を設定します。
-プロセスの失敗時に<code>reject()</code>をコールすることで次の<code>fail</code>プロセスにヘッドが移ります。
-また、<code>reject()</code>メソッドの引数にセットした値は、次の<code>fail</code>プロセスの引数として引き継がれます。</p>
-
-        
-          <div class='highlight'><pre>The
-  .then(<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">(reject)</span> {</span>
-    <span class="hljs-built_in">require</span>(<span class="hljs-string">'fs'</span>).readFile(<span class="hljs-string">'data/null.json'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">(err, data)</span> {</span>
-      <span class="hljs-keyword">if</span> (err != <span class="hljs-literal">null</span>) {
-        reject(err);
-      }
-    });
-  })
-  .fail(<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">(err)</span> {</span>
-    console.log(err);
-  });</pre></div>
         
         <h3 id="pomisify-function-">pomisify(function)</h3>
 <p>zazenをNodeで使うとき、<code>promisify()</code>というユーティリティが役に立ちます。

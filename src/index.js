@@ -75,6 +75,41 @@ var zazen = require('zazen')
 // ### The
 
 // ### then(function)
+// 非同期なプロセスを扱うときは`resolve`というキーワードの引数を設定します。
+// プロセスの完了時に`resolve()`をコールすることで次の`then`プロセスにヘッドが移ります。
+// また、`resolve()`メソッドの引数にセットした値は、次の`then`プロセスの引数として引き継がれます。
+The
+  .then(function (resolve) {
+    setTimeout(function () {
+      resolve('done');
+    }, 1000);
+  })
+  .then(function (arg) {
+    console.log(arg); // > 'done'
+  });
+// 同期的なプロセスで且つ次のプロセスに値を渡す必要のないとき、*resolve* キーワードを省略することができます。
+The
+  .then(function () {
+    console.log(1); // > 1
+  })
+  .then(function () {
+    console.log(2); // > 2
+  });
+
+// 失敗する可能性のあるプロセスの場合は`reject`というキーワードの引数を設定します。
+// プロセスの失敗時に`reject()`をコールすることで次の`fail`プロセスにヘッドが移ります。
+// また、`reject()`メソッドの引数にセットした値は、次の`fail`プロセスの引数として引き継がれます。
+The
+  .then(function (reject) {
+    require('fs').readFile('data/null.json', function (err, data) {
+      if (err != null) {
+        reject(err);
+      }
+    });
+  })
+  .fail(function (err) {
+    console.log(err);
+  });
 
 // ### then(the)
 
@@ -105,36 +140,6 @@ The
 // #### Handle errors
 
 // #### Recover error
-
-// ### \[then|fail\](function (resolve) {})
-// 非同期なプロセスを扱うときは`resolve`というキーワードの引数を設定します。
-// プロセスの完了時に`resolve()`をコールすることで次の`then`プロセスにヘッドが移ります。
-// また、`resolve()`メソッドの引数にセットした値は、次の`then`プロセスの引数として引き継がれます。
-The
-  .then(function (resolve) {
-    setTimeout(function () {
-      resolve('done');
-    }, 1000);
-  })
-  .then(function (arg) {
-    console.log(arg); // > 'done'
-  });
-
-// ### \[then|fail\](function (reject) {})
-// 失敗する可能性のあるプロセスの場合は`reject`というキーワードの引数を設定します。
-// プロセスの失敗時に`reject()`をコールすることで次の`fail`プロセスにヘッドが移ります。
-// また、`reject()`メソッドの引数にセットした値は、次の`fail`プロセスの引数として引き継がれます。
-The
-  .then(function (reject) {
-    require('fs').readFile('data/null.json', function (err, data) {
-      if (err != null) {
-        reject(err);
-      }
-    });
-  })
-  .fail(function (err) {
-    console.log(err);
-  });
 
 // ### pomisify(function)
 // zazenをNodeで使うとき、`promisify()`というユーティリティが役に立ちます。
