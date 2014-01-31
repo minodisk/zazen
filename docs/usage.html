@@ -97,6 +97,52 @@ zazenはcodeのreadabilityを保ちます。</p>
         
       
         
+        <h2 id="resolve-async-process">Resolve async process</h2>
+<p>非同期なプロセスを扱うときは<code>resolve</code>というキーワードの引数を設定します。
+プロセスの完了時に<code>resolve()</code>をコールすることで次の<code>then</code>プロセスにヘッドが移ります。</p>
+
+        
+          <div class='highlight'><pre>The
+  .then(<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">(resolve)</span> {</span>
+    setTimeout(<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">()</span> {</span>
+      resolve();
+    }, <span class="hljs-number">1000</span>);
+  })
+  .then(<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">()</span> {</span>
+    console.log(<span class="hljs-string">'done async process'</span>);
+  });</pre></div>
+        
+      
+        
+        <p>また、<code>resolve()</code>メソッドには次の<code>then</code></p>
+
+        
+      
+        
+        <h2 id="reject-process">Reject process</h2>
+<p>失敗する可能性のあるプロセスの場合は<code>reject</code>というキーワードの引数を設定します。
+プロセスの失敗時に<code>reject()</code>をコールすることで次の<code>fail</code>プロセスにヘッドが移ります。</p>
+
+        
+          <div class='highlight'><pre>The
+  .then(<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">(reject, resolve)</span> {</span>
+    <span class="hljs-built_in">require</span>(<span class="hljs-string">'fs'</span>).readFile(<span class="hljs-string">'data/null.json'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">(err, data)</span> {</span>
+      <span class="hljs-keyword">if</span> (err != <span class="hljs-literal">null</span>) {
+        reject(err);
+      } <span class="hljs-keyword">else</span> {
+        resolve(err);
+      }
+    });
+  })
+  .fail(<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">(err)</span> {</span>
+    console.log(err);
+  })
+  .then(<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">()</span> {</span>
+
+  });</pre></div>
+        
+      
+        
         <h2 id="run-tasks-serially">Run tasks serially</h2>
 
         

@@ -57,6 +57,40 @@ The
     console.log(3);
   });
 
+// ## Resolve async process
+// 非同期なプロセスを扱うときは`resolve`というキーワードの引数を設定します。
+// プロセスの完了時に`resolve()`をコールすることで次の`then`プロセスにヘッドが移ります。
+The
+  .then(function (resolve) {
+    setTimeout(function () {
+      resolve();
+    }, 1000);
+  })
+  .then(function () {
+    console.log('done async process');
+  });
+// また、`resolve()`メソッドには次の`then`
+
+// ## Reject process
+// 失敗する可能性のあるプロセスの場合は`reject`というキーワードの引数を設定します。
+// プロセスの失敗時に`reject()`をコールすることで次の`fail`プロセスにヘッドが移ります。
+The
+  .then(function (reject, resolve) {
+    require('fs').readFile('data/null.json', function (err, data) {
+      if (err != null) {
+        reject(err);
+      } else {
+        resolve(err);
+      }
+    });
+  })
+  .fail(function (err) {
+    console.log(err);
+  })
+  .then(function () {
+
+  });
+
 // ## Run tasks serially
 
 // ## Run tasks parallely
