@@ -1,11 +1,10 @@
 // # Zazen
-// zazenはあなたのコードをreadableにします。
 // zazenは`The`と`then`その他の少しのキーワードで構成される、asynchronous processをchainするライブラリです。
 
 // ## Include
 // Node
 
-var zazen = require('../zazen')
+var zazen = require('zazen')
   , The = zazen.The
   ;
 
@@ -57,38 +56,34 @@ The
     console.log(3);
   });
 
-// ## Resolve async process
+// ## Resolve process
 // 非同期なプロセスを扱うときは`resolve`というキーワードの引数を設定します。
 // プロセスの完了時に`resolve()`をコールすることで次の`then`プロセスにヘッドが移ります。
+// また、`resolve()`メソッドの引数にセットした値は、次の`then`プロセスの引数として引き継がれます。
 The
   .then(function (resolve) {
     setTimeout(function () {
-      resolve();
+      resolve('done');
     }, 1000);
   })
-  .then(function () {
-    console.log('done async process');
+  .then(function (arg) {
+    console.log(arg); // > 'done'
   });
-// また、`resolve()`メソッドには次の`then`
 
 // ## Reject process
 // 失敗する可能性のあるプロセスの場合は`reject`というキーワードの引数を設定します。
 // プロセスの失敗時に`reject()`をコールすることで次の`fail`プロセスにヘッドが移ります。
+// また、`reject()`メソッドの引数にセットした値は、次の`fail`プロセスの引数として引き継がれます。
 The
-  .then(function (reject, resolve) {
+  .then(function (reject) {
     require('fs').readFile('data/null.json', function (err, data) {
       if (err != null) {
         reject(err);
-      } else {
-        resolve(err);
       }
     });
   })
   .fail(function (err) {
     console.log(err);
-  })
-  .then(function () {
-
   });
 
 // ## Run tasks serially
@@ -99,7 +94,30 @@ The
 
 // ## Recover error
 
-// ## Pomisify
+// ## Utilities
+// zazenにはフローを簡単に扱うためのいくつかのユーティリティが実装されています。
+
+// ### The.wait()
+// `setTimeout`のzazen実装です。設定したミリ秒後に次の`then`プロセスにヘッドが移ります。
+The
+  .wait(1000)
+  .then(function () {
+    console.log('1sec left');
+  });
+// また、`The.then()`と同様に`then`プロセスで`return`することで同じ効果を期待できます。
+// この方法はプロセスの実行時まで遅延時間を決定できない時等に用います。
+The
+  .then(function () {
+    if (shouldWaitLongTime) {
+      return The.wait(5000);
+    }
+    return The.wait(1000);
+  })
+  .then(function () {
+    console.log('1src or 5sec left');
+  });
+
+// ### pomisify()
 // zazenをNodeで使うとき、`promisify()`というユーティリティが役に立ちます。
 // これは`function (err, result) {}`のようなcallbackを引数とする非同期なNodeのmethodをzazenのスタイルにwrapします。
 var promisify = zazen.promisify
@@ -123,4 +141,11 @@ The
     console.log(objects);
   });
 
-// ## distributions
+// ## Distributions
+// | | *development* | *production* |
+// |:-----|:-----:|:-----:|
+// | *Standalone* | [zazen.js](https://raw.github.com/minodisk/zazen/master/jquery.zazen.js) | - |
+// | *jQuery plugin* | [jquery.zazen.js](https://raw.github.com/minodisk/zazen/master/jquery.zazen.js) | - |
+
+// ## Documentation authers
+// [Daisuke Mino](https://github.com/minodisk)
