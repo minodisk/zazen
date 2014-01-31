@@ -21,7 +21,7 @@
   },
   "main": "lib/zazen.js",
   "scripts": {
-    "test": "node_modules/.bin/mocha test/node_test.js -R tap"
+    "test": "node_modules/grunt-contrib-coffee/node_modules/coffee-script/bin/coffee -j node_test.js -co tests tests/node_test.coffee tests/test.coffee && node_modules/mocha/bin/_mocha -R tap tests/node_test.js && rm tests/node_test.js"
   },
   "directories": {
     "test": "test"

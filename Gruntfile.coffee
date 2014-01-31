@@ -19,21 +19,21 @@ module.exports = (grunt) ->
           'test'
         ]
 
-    concat:
-      'test-browser':
-        src: [
-          'tests/src/browser0.coffee'
-          'tests/src/test.coffee'
-          'tests/src/browser1.coffee'
-        ]
-        dest: 'tests/browser_test.coffee'
-      'test-node':
-        src: [
-          'tests/src/node0.coffee'
-          'tests/src/test.coffee'
-          'tests/src/node1.coffee'
-        ]
-        dest: 'tests/node_test.coffee'
+#    concat:
+#      'test-browser':
+#        src: [
+#          'tests/src/browser0.coffee'
+#          'tests/src/test.coffee'
+#          'tests/src/browser1.coffee'
+#        ]
+#        dest: 'tests/browser_test.coffee'
+#      'test-node':
+#        src: [
+#          'tests/src/node0.coffee'
+#          'tests/src/test.coffee'
+#          'tests/src/node1.coffee'
+#        ]
+#        dest: 'tests/node_test.coffee'
 
     coffee:
       main:
@@ -47,16 +47,16 @@ module.exports = (grunt) ->
             'src/zazen.coffee'
             'src/jquerize.coffee'
           ]
-      test:
-        files:
-          'tests/browser_test.js': 'tests/browser_test.coffee'
-          'tests/node_test.js': 'tests/node_test.coffee'
+#      test:
+#        files:
+#          'tests/browser_test.js': 'tests/browser_test.coffee'
+#          'tests/node_test.js': 'tests/node_test.coffee'
 
-    clean:
-      test: [
-        'tests/*.coffee'
-        'tests/*.js'
-      ]
+#    clean:
+#      test: [
+#        'tests/*.coffee'
+#        'tests/*.js'
+#      ]
 
     bump:
       options:
@@ -76,9 +76,9 @@ module.exports = (grunt) ->
         pushTags: false
 
   grunt.loadNpmTasks 'grunt-contrib-watch'
-  grunt.loadNpmTasks 'grunt-contrib-concat'
+#  grunt.loadNpmTasks 'grunt-contrib-concat'
   grunt.loadNpmTasks 'grunt-contrib-coffee'
-  grunt.loadNpmTasks 'grunt-contrib-clean'
+#  grunt.loadNpmTasks 'grunt-contrib-clean'
   grunt.loadNpmTasks 'grunt-bump'
   grunt.loadNpmTasks 'grunt-release'
 
@@ -93,14 +93,14 @@ module.exports = (grunt) ->
     'watch'
   ]
 
-  grunt.registerTask 'before_tests', [
-    'concat:test-browser'
-    'concat:test-node'
-    'coffee:test'
-  ]
-  grunt.registerTask 'after_tests', [
-    'clean:test'
-  ]
+#  grunt.registerTask 'before_tests', [
+#    'concat:test-browser'
+#    'concat:test-node'
+#    'coffee:test'
+#  ]
+#  grunt.registerTask 'after_tests', [
+#    'clean:test'
+#  ]
 
   grunt.registerTask 'publish', [
     'bump'
