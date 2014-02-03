@@ -41,11 +41,11 @@ The
 
 // ### Install with package manager
 // #### Npm
-// ```sh
+// ```bash
 // npm install zazen
 // ```
 // #### Bower
-// ```sh
+// ```bash
 // bower install zazen
 // ```
 
@@ -56,15 +56,15 @@ var zazen = require('zazen')
   ;
 // #### Standalone in browser
 // ```html
-// <script src="path/to/zazen.js">
+// <script src="path/to/zazen.js"></script>
 // <script>
 // var The = zazen.The;
 // </script>
 // ```
 // #### jQuery plugin in browser
 // ```html
-// <script src="path/to/jquery.js">
-// <script src="path/to/jquery.zazen.js">
+// <script src="path/to/jquery.js"></script>
+// <script src="path/to/jquery.zazen.js"></script>
 // <script>
 // var The = zazen.The;
 // </script>
