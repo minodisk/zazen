@@ -42,34 +42,31 @@
   %>
   </aside>
   <div class="container">
-    <div class="page">
-      <div class="header">
-        <% if (hasTitle) { %>
-          <% var section = sections.shift(); %>
-          <%= section.docsHtml %>
-          <% if (!(/^\s*$/).test(section.codeText)) { %>
-            <%= section.codeHtml %>
-          <% } %>
-        <% } else { %>
-          <h1><%= title %></h1>
-        <% } %>
-      </div>
-
-      <%
-      for (var i = 0, l = sections.length; i<l; i++) {
-        var section = sections[i];
-        %>
+    <div class="header">
+      <% if (hasTitle) { %>
+        <% var section = sections.shift(); %>
         <%= section.docsHtml %>
-        <%
-        if (!(/^\s*$/).test(section.codeText)) {
-        %>
+        <% if (!(/^\s*$/).test(section.codeText)) { %>
           <%= section.codeHtml %>
-        <%
-        }
-      }
-      %>
-      <div class="fleur">h</div>
+        <% } %>
+      <% } else { %>
+        <h1><%= title %></h1>
+      <% } %>
     </div>
+
+    <%
+    for (var i = 0, l = sections.length; i<l; i++) {
+      var section = sections[i];
+      %>
+      <%= section.docsHtml %>
+      <%
+      if (!(/^\s*$/).test(section.codeText)) {
+      %>
+        <%= section.codeHtml %>
+      <%
+      }
+    }
+    %>
   </div>
 </body>
 </html>
