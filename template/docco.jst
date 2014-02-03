@@ -44,7 +44,7 @@
     <div class="header">
       <% if (hasTitle) { %>
         <% var section = sections.shift(); %>
-        <%= section.docsHtml %>
+        <%= section.docsHtml.replace(/<p><\/p>/g, '') %>
         <% if (!(/^\s*$/).test(section.codeText)) { %>
           <%= section.codeHtml %>
         <% } %>
@@ -57,7 +57,7 @@
     for (var i = 0, l = sections.length; i<l; i++) {
       var section = sections[i];
       %>
-      <%= section.docsHtml %>
+      <%= section.docsHtml.replace(/<p>(<p.*?<\/p>)<\/p>/g, '$1') %>
       <%
       if (!(/^\s*$/).test(section.codeText)) {
       %>

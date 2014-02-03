@@ -5,6 +5,9 @@
 // コールバックスタイルの非同期処理は深いネストのせいでリーダビリティを失い、
 // エラーハンドリングも煩雑になりがちです。
 // zazenはこれらの問題を解決するためのスマートな方法を提供します。
+var zazen = require('zazen')
+  , The = zazen.The
+  ;
 The
   .then(function () {
     'do first task'
@@ -26,35 +29,29 @@ The
     console.log(3);
   });
 
-// ### Distributions
-// | | *development* | *production* |
-// |:-----|:-----:|:-----:|
-// | *Standalone* | [zazen.js](https://raw.github.com/minodisk/zazen/master/jquery.zazen.js) | - |
-// | *jQuery plugin* | [jquery.zazen.js](https://raw.github.com/minodisk/zazen/master/jquery.zazen.js) | - |
-
-// ### Install with package manager
-// #### Npm
+// ### Install
 // ```bash
 // npm install zazen
 // ```
-// #### Bower
 // ```bash
 // bower install zazen
 // ```
 
-// ### Include into your project
-// #### Node
-var zazen = require('zazen')
-  , The = zazen.The
-  ;
-// #### Standalone in browser
+// ### Include
+// <p class="label">Node</p>
+// ```
+// var zazen = require('zazen')
+//   , The = zazen.The
+//   ;
+// ```
+// Standalone
 // ```html
 // <script src="path/to/zazen.js"></script>
 // <script>
 // var The = zazen.The;
 // </script>
 // ```
-// #### jQuery plugin in browser
+// jQuery plugin
 // ```html
 // <script src="path/to/jquery.js"></script>
 // <script src="path/to/jquery.zazen.js"></script>
@@ -63,14 +60,16 @@ var zazen = require('zazen')
 // </script>
 // ```
 
+
+
 // ## APIs
 
 // ### The
 
 // ### then(function)
-// 非同期なプロセスを扱うときは`resolve`というキーワードの引数を設定します。
-// プロセスの完了時に`resolve()`をコールすることで次の`then`プロセスにヘッドが移ります。
-// また、`resolve()`メソッドの引数にセットした値は、次の`then`プロセスの引数として引き継がれます。
+// 非同期なプロセスを扱うときは**resolve**というキーワードの引数を設定します。
+// プロセスの完了時に`resolve()`をコールすることで次の**then**プロセスにヘッドが移ります。
+// また、`resolve()`メソッドの引数にセットした値は、次の**then**プロセスの引数として引き継がれます。
 The
   .then(function (resolve) {
     setTimeout(function () {
@@ -80,7 +79,7 @@ The
   .then(function (arg) {
     console.log(arg); // > 'done'
   });
-// 同期的なプロセスで且つ次のプロセスに値を渡す必要のないとき、*resolve* キーワードを省略することができます。
+// 同期的なプロセスで且つ次のプロセスに値を渡す必要のないとき、**resolve**キーワードを省略することができます。
 The
   .then(function () {
     console.log(1); // > 1
@@ -88,10 +87,9 @@ The
   .then(function () {
     console.log(2); // > 2
   });
-
-// 失敗する可能性のあるプロセスの場合は`reject`というキーワードの引数を設定します。
-// プロセスの失敗時に`reject()`をコールすることで次の`fail`プロセスにヘッドが移ります。
-// また、`reject()`メソッドの引数にセットした値は、次の`fail`プロセスの引数として引き継がれます。
+// 失敗する可能性のあるプロセスの場合は**reject**というキーワードの引数を設定します。
+// プロセスの失敗時に`reject()`をコールすることで次の**fail**プロセスにヘッドが移ります。
+// また、`reject()`メソッドの引数にセットした値は、次の**fail**プロセスの引数として引き継がれます。
 The
   .then(function (reject) {
     require('fs').readFile('data/null.json', function (err, data) {
@@ -105,10 +103,51 @@ The
   });
 
 // ### then(the)
+// `then()`では別の`The`インスタンスをヘッドを移すこともできます。
+The
+  .then(
+    The
+      .wait(1000)
+      .then(function () {
+        console.log(1);
+      })
+      .wait(2000)
+  )
+  .then(function () {
+    console.log(2);
+  });
 
 // ### then([function, ...])
+// `then()`に`Array<Function>`を渡すとそれらを並列なプロセスとして扱います。
+// 全てのプロセスが完了するのを待って次の**then**プロセスにヘッドが移ります。
+The
+  .then([
+    function () {
+      'sync process';
+    },
+    function (resolve) {
+      setTimeout(function () {
+        resolve();
+      }, 1000);
+    },
+    function (resolve) {
+      setTimeout(resolve, 2000);
+    }
+  ])
+  .then(function () {
+    'will be passed 2sec';
+  });
 
 // ### fail(function)
+// 明示的に`reject()`をコールした時や同期プロセスでエラーが発生した時に、
+// 発生元の**then**プロセスより後で一番手前にある**fail**プロセスにヘッドが移ります。
+The
+  .then(function (reject) {
+    reject()
+  })
+  .fail(function () {
+    'this will be called';
+  });
 
 // ### wait(delay)
 // `setTimeout`のzazen実装です。設定したミリ秒後に次の`then`プロセスにヘッドが移ります。
@@ -117,7 +156,7 @@ The
   .then(function () {
     console.log('1sec left');
   });
-// また、`The.then()`と同様に`then`プロセスで`return`することで同じ効果を期待できます。
+// また、`The.then()`と同様に**then**プロセスで`return`することで同じ効果を期待できます。
 // この方法はプロセスの実行時まで遅延時間を決定できない時等に用います。
 The
   .then(function () {
@@ -129,8 +168,21 @@ The
   .then(function () {
     console.log('1src or 5sec left');
   });
-
-// #### Handle errors
+// 復帰する可能性があるプロセスの場合は**resolve**というキーワードの引数を設定します。
+// 復帰時に`resolve()`をコールすることで次の**then**プロセスにヘッドが移ります。
+// また、`resolve()`メソッドの引数にセットした値は、次の**then**プロセスの引数として引き継がれます。
+The
+  .then(function (reject) {
+    reject();
+  })
+  .fail(function (resolve) {
+    if (true) {
+      resolve('a');
+    }
+  })
+  .then(function (arg) {
+    console.log(arg); // > 'a'
+  });
 
 // #### Recover error
 
@@ -163,6 +215,12 @@ The
 
 
 // ## Copyright
+
+// ### Distributions
+// | | *development* | *production* |
+// |:-----|:-----:|:-----:|
+// | *Standalone* | [zazen.js](https://raw.github.com/minodisk/zazen/master/jquery.zazen.js) | - |
+// | *jQuery plugin* | [jquery.zazen.js](https://raw.github.com/minodisk/zazen/master/jquery.zazen.js) | - |
 
 // ### Documentation authers
 // [Daisuke Mino](https://github.com/minodisk)
