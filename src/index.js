@@ -2,33 +2,26 @@
 // zazenは`The`と`then`とその他の少しのキーワードで構成される、非同期プロセスを繋ぐためのライブラリです。
 
 // ### Escape from callback hell
-
-var wait = function (duration, callback) {
-    setTimeout(callback, duration);
-  }
-  ;
-wait(1000, function () {
-  console.log(1);
-  wait(1000, function () {
-    console.log(2);
-    wait(1000, function () {
-      console.log(3);
-    });
-  });
-});
 // コールバックスタイルの非同期処理は深いネストのせいでリーダビリティを失い、
-// エラーハンドリングが煩雑になりがちです。
+// エラーハンドリングも煩雑になりがちです。
 // zazenはこれらの問題を解決するためのスマートな方法を提供します。
 The
-  .wait(1000)
   .then(function () {
-    console.log(1);
+    'do first task'
   })
   .wait(1000)
-  .then(function () {
-    console.log(2);
+  .then(function (reject, resolve) {
+    asyncFunc(function (err, result) {
+      if (err != null) {
+        reject(err);
+      } else {
+        resolve(result);
+      }
+    });
   })
-  .wait(1000)
+  .fail(function (err) {
+    console.log(err); // > 'fail'
+  })
   .then(function () {
     console.log(3);
   });
