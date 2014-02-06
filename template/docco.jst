@@ -45,7 +45,7 @@
     <div class="header">
       <% if (hasTitle) { %>
         <% var section = sections.shift(); %>
-        <%= section.docsHtml.replace(/<p><\/p>/g, '') %>
+        <%= section.docsHtml.replace(/<p><\/p>/g, '').replace(/<p>(\s*<h4>[\s\S]*?)<\/p>/g, '<section>$1</section>') %>
         <% if (!(/^\s*$/).test(section.codeText)) { %>
           <%= section.codeHtml %>
         <% } %>
@@ -56,15 +56,19 @@
 
     <%
     for (var i = 0, l = sections.length; i<l; i++) {
-      var section = sections[i];
-      %>
-      <%= section.docsHtml.replace(/<p>(<p.*?<\/p>)<\/p>/g, '$1') %>
-      <%
+      var section = sections[i]
+        , codeHtml = ''
+        ;
       if (!(/^\s*$/).test(section.codeText)) {
-      %>
-        <%= section.codeHtml %>
-      <%
+        codeHtml = section.codeHtml;
       }
+      docsHtml = section.docsHtml
+        .replace(/<p>(<h\d+>[\s\S]*?<\/h\d+>)([\s\S]*?)<\/p>/g, '<section>$1<p>$2</p>' + codeHtml + '</section>')
+        .replace(/<p>([\s\S]*?)<\/p>/g, '<section><p>$1</p>' + codeHtml + '</section>')
+        ;
+      %>
+      <%= docsHtml %>
+      <%
     }
     %>
   </div>
