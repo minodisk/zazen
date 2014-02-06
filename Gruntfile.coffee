@@ -82,8 +82,6 @@ module.exports = (grunt) ->
     'watch'
   ]
   grunt.registerTask 'docs', [
-#    'coffee:docs'
-#    'doctest'
     'docco:docs'
   ]
   grunt.registerTask 'scripts', [
@@ -92,14 +90,3 @@ module.exports = (grunt) ->
   grunt.registerTask 'styles', [
     'sass:styles'
   ]
-#  grunt.registerTask 'doctest', ->
-#    done = @async()
-#    { exec } = require 'child_process'
-#    exec 'node_modules/power-doctest/bin/power-doctest.js src/*.js',
-#    (err, stdout, stderr) ->
-#      console.log 'stdout:', stdout
-#      console.log 'stderr:', stderr
-#      if err?
-#        console.log 'error:', err
-#      else
-#        done()
