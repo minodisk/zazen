@@ -1,7 +1,7 @@
 // # zazen
 // zazenは`The`と`then`とその他の少しのキーワードで構成される、非同期プロセスを繋ぐためのライブラリです。
 
-// <h4>Escape from callback hell</h4>
+// **Escape from callback hell**
 // コールバックスタイルの非同期処理は深いネストのせいでリーダビリティを失い、
 // エラーハンドリングも煩雑になりがちです。
 // zazenはこれらの問題を解決するためのスマートな方法を提供します。
@@ -36,14 +36,14 @@ The
 // ```
 
 // ### Include
-// <p class="label">in Node</p>
+// **in Node**
 // ```
 // var zazen = require('zazen')
 //   , The = zazen.The
 //   ;
 // ```
 
-// <p class="label">in browser (standalone)</p>
+// **in browser (standalone)**
 // ```html
 // <script src="path/to/zazen.js"></script>
 // <script>
@@ -51,7 +51,7 @@ The
 // </script>
 // ```
 
-// <p class="label">in browser (jQuery plugin)</p>
+// **in browser (jQuery plugin)**
 // ```html
 // <script src="path/to/jquery.js"></script>
 // <script src="path/to/jquery.zazen.js"></script>
@@ -65,7 +65,7 @@ The
 // ## APIs
 
 // ### The(context)
-// <h4>束縛</h4>
+// **束縛**
 // zazenフロー中の`function`を`context`で束縛します。
 // `context`を渡さなかった場合や`The`を関数としてコールしなかった場合は`The`インスタンスが`context`となります。
 The({ foo: 'bar' })
@@ -83,7 +83,7 @@ The
     this; //=> '[object the]'
   });
 
-// <h4>コンストラクタの同位性</h4>
+// **コンストラクタの同位性**
 // `new`,`()`の有無によらず同じ機能を持ちます。
 new The().then();
 //
@@ -92,7 +92,7 @@ The().then();
 The.then();
 
 // ### then(function)
-// <h4>resolve 引数</h4>
+// **resolve 引数**
 // 非同期プロセスや次のプロセスに値を渡す必要がある場合、*resolve*というキーワードの引数を設定します。
 // プロセスの完了時に`resolve()`をコールすることで次の*then*プロセスにヘッドが移ります。
 // また、`resolve()`の引数にセットした値は、次の*then*プロセスに引数として渡されます。
@@ -105,7 +105,7 @@ The
   .then(function (arg) {
     console.log(arg); // > 'done'
   });
-// <h4>reject 引数</h4>
+// **reject 引数**
 // プロセス中でエラーハンドリングする場合、*reject*というキーワードの引数を設定します。
 // プロセスの失敗時に`reject()`をコールすることで次の*fail*プロセスにヘッドが移ります。
 // また、`reject()`の引数にセットした値は、次の*fail*プロセスに引数として渡されます。
@@ -120,7 +120,7 @@ The
   .fail(function (err) {
     console.log(err);
   });
-// <h4>resolve, reject 引数の省略</h4>
+// **resolve, reject 引数の省略**
 // 同期プロセスで且つ次のプロセスに値を渡す必要がない場合、*resolve*というキーワードの引数を省略することができます。
 // また、プロセス中でエラーハンドリングをしない場合、*reject*というキーワードの引数を省略することができます。
 The
@@ -132,7 +132,7 @@ The
   });
 
 // ### then(the)
-// <h4>the1 -> the2 -> the1</h4>
+// **the1 -> the2 -> the1**
 // `then()`では別の`The`インスタンスをヘッドを移すこともできます。
 The
   .then(
@@ -148,7 +148,7 @@ The
   });
 
 // ### then([function, ...])
-// <h4>並列処理</h4>
+// **並列処理**
 // `then()`に`Array<Function>`を渡すとそれらを並列なプロセスとして扱います。
 // 全てのプロセスが完了するのを待って次の*then*プロセスにヘッドが移ります。
 The
@@ -170,7 +170,7 @@ The
   });
 
 // ### fail(function)
-// <h4>エラーハンドリング</h4>
+// **エラーハンドリング**
 // *then*プロセス中に`reject()`をコールした場合やエラーなどをキャッチした場合、次の*fail*プロセスにヘッドが移ります。
 // 間の*then*プロセスはスキップされ、*fail*から後の*then*プロセスも実行されるません。
 The
@@ -201,7 +201,7 @@ The
     /* won't be called */
   });
 
-// <h4>then へ復帰</h4>
+// **then へ復帰**
 // *resolve*というキーワードを引数を設定し、`resolve()`をコールすることで次の*then*プロセスにヘッドが移ります。
 // また、`resolve()`の引数にセットした値は、次の*then*プロセスに引数として渡されます。
 The
@@ -216,7 +216,7 @@ The
     /* will be called */
   });
 
-// <h4>fail から fail へ</h4>
+// **fail から fail へ**
 // *reject*というキーワードを引数を設定し、`reject()`をコールすることで次の*fail*プロセスにヘッドが移ります。
 // また、`reject()`の引数にセットした値は、次の*fail*プロセスに引数として渡されます。
 The
@@ -235,16 +235,16 @@ The
   });
 
 // ### wait(delay)
-// <h4>遅延</h4>
-// `setTimeout`のzazen実装です。設定したミリ秒後に次の`then`プロセスにヘッドが移ります。
+// **遅延**
+// 設定したミリ秒後に次の`then`プロセスにヘッドが移ります。
 The
   .wait(1000)
   .then(function () {
     console.log('1sec left');
   });
-// <h4>then で return</h4>
+// **then で return**
 // *then*プロセス中で`The.wait()`を`return`することで同じ効果を期待できます。
-// この方法はプロセスの実行時まで遅延するかどうかを決定できない場合などに用います。
+// この方法はプロセスの実行時まで遅延するか否かを決定できない場合などに用います。
 The
   .then(function () {
     if (Math.random() < 0.5) {

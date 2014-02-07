@@ -14,9 +14,6 @@ h2 {
 h3 {
   font-size: 18px; }
 
-section {
-  margin: 25px 0; }
-
 p {
   margin: 25px 0 10px; }
 
@@ -94,7 +91,7 @@ dl.toc {
       margin-bottom: 10px; }
 
 .label,
-h4 {
+strong {
   margin-bottom: 2px;
   font-weight: bold;
   display: block;
