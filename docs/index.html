@@ -23,25 +23,25 @@
           
           <dt><a href="#apis"><span>APIs</span></a></dt>
           
-          <dd><a href="#the-context-"><span>The(context)</span></a></dd>
+          <dd><a href="#the-context-object-"><span>The(context:Object)</span></a></dd>
           
-          <dd><a href="#then-function-"><span>then(function)</span></a></dd>
+          <dd><a href="#then-process-function-"><span>then(process:Function)</span></a></dd>
           
-          <dd><a href="#then-the-"><span>then(the)</span></a></dd>
+          <dd><a href="#then-the-the-"><span>then(the:The)</span></a></dd>
           
-          <dd><a href="#then-function-"><span>then([function, …])</span></a></dd>
+          <dd><a href="#then-processes-array-lt-function-gt-"><span>then(processes:Array&lt;Function&gt;)</span></a></dd>
           
-          <dd><a href="#fail-function-"><span>fail(function)</span></a></dd>
+          <dd><a href="#fail-process-function-"><span>fail(process:Function)</span></a></dd>
           
-          <dd><a href="#wait-delay-"><span>wait(delay)</span></a></dd>
+          <dd><a href="#wait-delay-number-"><span>wait(delay:Number)</span></a></dd>
           
-          <dd><a href="#pomisify-function-"><span>pomisify(function)</span></a></dd>
+          <dd><a href="#pomisify-async-function-"><span>pomisify(async:Function)</span></a></dd>
           
           <dt><a href="#cookbook"><span>Cookbook</span></a></dt>
           
           <dd><a href="#with-underscore-or-lo-dash"><span>With underscore or lo-dash</span></a></dd>
           
-          <dt><a href="#copyright"><span>Copyright</span></a></dt>
+          <dt><a href="#download"><span>Download</span></a></dt>
           
           <dd><a href="#distributions"><span>Distributions</span></a></dd>
           
@@ -124,7 +124,7 @@ The
       <h2 id="apis">APIs</h2>
 
       
-      <h3 id="the-context-">The(context)</h3>
+      <h3 id="the-context-object-">The(context:Object)</h3>
 <p><strong>束縛</strong>
 zazenフロー中の<code>function</code>を<code>context</code>で束縛します。
 <code>context</code>を渡さなかった場合や<code>The</code>を関数としてコールしなかった場合は<code>The</code>インスタンスが<code>context</code>となります。</p>
@@ -163,7 +163,7 @@ zazenフロー中の<code>function</code>を<code>context</code>で束縛しま�
       
         <div class='highlight'><pre>The.then();</pre></div>
       
-      <h3 id="then-function-">then(function)</h3>
+      <h3 id="then-process-function-">then(process:Function)</h3>
 <p><strong>resolve 引数</strong>
 非同期プロセスや次のプロセスに値を渡す必要がある場合、<em>resolve</em>というキーワードの引数を設定します。
 プロセスの完了時に<code>resolve()</code>をコールすることで次の<em>then</em>プロセスにヘッドが移ります。
@@ -200,7 +200,7 @@ zazenフロー中の<code>function</code>を<code>context</code>で束縛しま�
       
       <p><strong>resolve, reject 引数の省略</strong>
 同期プロセスで且つ次のプロセスに値を渡す必要がない場合、<em>resolve</em>というキーワードの引数を省略することができます。
-また、プロセス中でエラーハンドリングをしない場合、<em>reject</em>というキーワードの引数を省略することができます。</p>
+また、プロセス中でエラーハンドリングをする必要がない場合、<em>reject</em>というキーワードの引数を省略することができます。</p>
 
       
         <div class='highlight'><pre>The
@@ -211,9 +211,10 @@ zazenフロー中の<code>function</code>を<code>context</code>で束縛しま�
     console.log(<span class="hljs-number">2</span>); <span class="hljs-comment">// &gt; 2</span>
   });</pre></div>
       
-      <h3 id="then-the-">then(the)</h3>
+      <h3 id="then-the-the-">then(the:The)</h3>
 <p><strong>the1 -&gt; the2 -&gt; the1</strong>
-<code>then()</code>では別の<code>The</code>インスタンスをヘッドを移すこともできます。</p>
+<code>then()</code>に<code>The</code>インスタンスを渡すと、その<code>The</code>インスタンスにヘッドが移ります。
+渡した<code>The</code>インスタンスが完了すると、元の<code>The</code>インスタンスの次の<em>then</em>プロセスにヘッドが移ります。</p>
 
       
         <div class='highlight'><pre>The
@@ -229,31 +230,74 @@ zazenフロー中の<code>function</code>を<code>context</code>で束縛しま�
     console.log(<span class="hljs-number">2</span>);
   });</pre></div>
       
-      <h3 id="then-function-">then([function, …])</h3>
+      <p><strong>then で return</strong>
+<em>then</em>プロセス中で<code>The</code>インスタンスを<code>return</code>することでも同様に、別の<code>The</code>インスタンスにヘッドを移すことができます。
+この方法はプロセスの実行時まで別の<code>The</code>インスタンスにヘッドを移すか否かを決定できない場合などに用います。</p>
+
+      
+        <div class='highlight'><pre>The
+  .then(<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">()</span> {</span>
+    <span class="hljs-keyword">if</span> (<span class="hljs-built_in">Math</span>.random() &lt; <span class="hljs-number">0.5</span>) {
+      <span class="hljs-keyword">return</span> The
+        .wait(<span class="hljs-number">1000</span>)
+        .then(<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">()</span> {</span>
+          console.log(<span class="hljs-number">1</span>);
+        })
+        .wait(<span class="hljs-number">2000</span>);
+    }
+  })
+  .then(<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">()</span> {</span>
+    console.log(<span class="hljs-string">'another process had run, 50% of the time'</span>);
+  });</pre></div>
+      
+      <h3 id="then-processes-array-lt-function-gt-">then(processes:Array&lt;Function&gt;)</h3>
 <p><strong>並列処理</strong>
-<code>then()</code>に<code>Array&lt;Function&gt;</code>を渡すとそれらを並列なプロセスとして扱います。
+<code>then()</code>に<code>Array&lt;Function&gt;</code>を渡すと、それらを並列なプロセスとして扱います。
 全てのプロセスが完了するのを待って次の<em>then</em>プロセスにヘッドが移ります。</p>
 
       
         <div class='highlight'><pre>The
   .then([
-    <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">()</span> {</span>
-      <span class="hljs-string">'sync process'</span>;
-    },
     <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">(resolve)</span> {</span>
-      setTimeout(<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">()</span> {</span>
-        resolve();
-      }, <span class="hljs-number">1000</span>);
+      setTimeout(resolve, <span class="hljs-number">1000</span>);
+    },
+    <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">()</span> {</span>
+      <span class="hljs-comment">/* run as sync process */</span>
     },
     <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">(resolve)</span> {</span>
       setTimeout(resolve, <span class="hljs-number">2000</span>);
     }
   ])
   .then(<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">()</span> {</span>
-    <span class="hljs-string">'will be passed 2sec'</span>;
+    console.log(<span class="hljs-string">'will be passed 2sec'</span>);
   });</pre></div>
       
-      <h3 id="fail-function-">fail(function)</h3>
+      <p><strong>then で return</strong>
+<em>then</em>プロセス中で<code>Array&lt;Function&gt;</code>を<code>return</code>することでも同様に、並列なプロセスとして全てのプロセスの完了を待って次の<em>then</em>プロセスにヘッドが移ります。
+この方法はプロセスの実行時まで別の並列処理を行うか否かを決定できない場合などに用います。</p>
+
+      
+        <div class='highlight'><pre>The
+  .then(<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">()</span> {</span>
+    <span class="hljs-keyword">if</span> (<span class="hljs-built_in">Math</span>.random() &lt; <span class="hljs-number">0.5</span>) {
+      <span class="hljs-keyword">return</span> [
+        <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">(resolve)</span> {</span>
+          setTimeout(resolve, <span class="hljs-number">1000</span>);
+        },
+        <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">()</span> {</span>
+          <span class="hljs-comment">/* run as sync process */</span>
+        },
+        <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">(resolve)</span> {</span>
+          setTimeout(resolve, <span class="hljs-number">2000</span>);
+        }
+      ];
+    }
+  })
+  .then(<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">()</span> {</span>
+    console.log(<span class="hljs-string">'will be passed 2sec, 50% of the time'</span>);
+  });</pre></div>
+      
+      <h3 id="fail-process-function-">fail(process:Function)</h3>
 <p><strong>エラーハンドリング</strong>
 <em>then</em>プロセス中に<code>reject()</code>をコールした場合やエラーなどをキャッチした場合、次の<em>fail</em>プロセスにヘッドが移ります。
 間の<em>then</em>プロセスはスキップされ、<em>fail</em>から後の<em>then</em>プロセスも実行されるません。</p>
@@ -326,15 +370,15 @@ zazenフロー中の<code>function</code>を<code>context</code>で束縛しま�
     <span class="hljs-comment">/* will be called */</span>
   });</pre></div>
       
-      <h3 id="wait-delay-">wait(delay)</h3>
+      <h3 id="wait-delay-number-">wait(delay:Number)</h3>
 <p><strong>遅延</strong>
-設定したミリ秒後に次の<code>then</code>プロセスにヘッドが移ります。</p>
+設定したミリ秒後に次の<em>then</em>プロセスにヘッドが移ります。</p>
 
       
         <div class='highlight'><pre>The
   .wait(<span class="hljs-number">1000</span>)
   .then(<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">()</span> {</span>
-    console.log(<span class="hljs-string">'1sec left'</span>);
+    console.log(<span class="hljs-string">'1sec has been left'</span>);
   });</pre></div>
       
       <p><strong>then で return</strong>
@@ -349,12 +393,13 @@ zazenフロー中の<code>function</code>を<code>context</code>で束縛しま�
     }
   })
   .then(<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">()</span> {</span>
-    console.log(<span class="hljs-string">'1sec left 50% of the time'</span>);
+    console.log(<span class="hljs-string">'1sec has been left, 50% of the time'</span>);
   });</pre></div>
       
-      <h3 id="pomisify-function-">pomisify(function)</h3>
-<p>zazenをNodeで使うとき、<code>promisify()</code>というユーティリティが役に立ちます。
-これは<code>function (err, result) {}</code>のようなcallbackを引数とする非同期なNodeのmethodをzazenのスタイルにwrapします。</p>
+      <h3 id="pomisify-async-function-">pomisify(async:Function)</h3>
+<p>async: Function
+zazenをNodeで使うとき、<code>promisify()</code>というユーティリティが役に立ちます。
+これは<code>function (err, result) {}</code>のようなcallbackを引数とする非同期なNodeのメソッドをzazenスタイルにラップします。</p>
 
       
         <div class='highlight'><pre><span class="hljs-keyword">var</span> promisify = zazen.promisify
@@ -383,7 +428,7 @@ readFile(<span class="hljs-string">'data/a.json'</span>)
     console.log(objects);
   });</pre></div>
       
-      <h2 id="copyright">Copyright</h2>
+      <h2 id="download">Download</h2>
 
       
       <h3 id="distributions">Distributions</h3>

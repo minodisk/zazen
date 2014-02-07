@@ -61,10 +61,9 @@ The
 // ```
 
 
-
 // ## APIs
 
-// ### The(context)
+// ### The(context:Object)
 // **束縛**
 // zazenフロー中の`function`を`context`で束縛します。
 // `context`を渡さなかった場合や`The`を関数としてコールしなかった場合は`The`インスタンスが`context`となります。
@@ -91,7 +90,7 @@ The().then();
 //
 The.then();
 
-// ### then(function)
+// ### then(process:Function)
 // **resolve 引数**
 // 非同期プロセスや次のプロセスに値を渡す必要がある場合、*resolve*というキーワードの引数を設定します。
 // プロセスの完了時に`resolve()`をコールすることで次の*then*プロセスにヘッドが移ります。
@@ -122,7 +121,7 @@ The
   });
 // **resolve, reject 引数の省略**
 // 同期プロセスで且つ次のプロセスに値を渡す必要がない場合、*resolve*というキーワードの引数を省略することができます。
-// また、プロセス中でエラーハンドリングをしない場合、*reject*というキーワードの引数を省略することができます。
+// また、プロセス中でエラーハンドリングをする必要がない場合、*reject*というキーワードの引数を省略することができます。
 The
   .then(function () {
     console.log(1); // > 1
@@ -131,9 +130,10 @@ The
     console.log(2); // > 2
   });
 
-// ### then(the)
+// ### then(the:The)
 // **the1 -> the2 -> the1**
-// `then()`では別の`The`インスタンスをヘッドを移すこともできます。
+// `then()`に`The`インスタンスを渡すと、その`The`インスタンスにヘッドが移ります。
+// 渡した`The`インスタンスが完了すると、元の`The`インスタンスの次の*then*プロセスにヘッドが移ります。
 The
   .then(
     The
@@ -146,30 +146,67 @@ The
   .then(function () {
     console.log(2);
   });
+// **then で return**
+// *then*プロセス中で`The`インスタンスを`return`することでも同様に、別の`The`インスタンスにヘッドを移すことができます。
+// この方法はプロセスの実行時まで別の`The`インスタンスにヘッドを移すか否かを決定できない場合などに用います。
+The
+  .then(function () {
+    if (Math.random() < 0.5) {
+      return The
+        .wait(1000)
+        .then(function () {
+          console.log(1);
+        })
+        .wait(2000);
+    }
+  })
+  .then(function () {
+    console.log('another process had run, 50% of the time');
+  });
 
-// ### then([function, ...])
+// ### then(processes:Array&lt;Function&gt;)
 // **並列処理**
-// `then()`に`Array<Function>`を渡すとそれらを並列なプロセスとして扱います。
+// `then()`に`Array<Function>`を渡すと、それらを並列なプロセスとして扱います。
 // 全てのプロセスが完了するのを待って次の*then*プロセスにヘッドが移ります。
 The
   .then([
-    function () {
-      'sync process';
-    },
     function (resolve) {
-      setTimeout(function () {
-        resolve();
-      }, 1000);
+      setTimeout(resolve, 1000);
+    },
+    function () {
+      /* run as sync process */
     },
     function (resolve) {
       setTimeout(resolve, 2000);
     }
   ])
   .then(function () {
-    'will be passed 2sec';
+    console.log('will be passed 2sec');
+  });
+// **then で return**
+// *then*プロセス中で`Array<Function>`を`return`することでも同様に、並列なプロセスとして全てのプロセスの完了を待って次の*then*プロセスにヘッドが移ります。
+// この方法はプロセスの実行時まで別の並列処理を行うか否かを決定できない場合などに用います。
+The
+  .then(function () {
+    if (Math.random() < 0.5) {
+      return [
+        function (resolve) {
+          setTimeout(resolve, 1000);
+        },
+        function () {
+          /* run as sync process */
+        },
+        function (resolve) {
+          setTimeout(resolve, 2000);
+        }
+      ];
+    }
+  })
+  .then(function () {
+    console.log('will be passed 2sec, 50% of the time');
   });
 
-// ### fail(function)
+// ### fail(process:Function)
 // **エラーハンドリング**
 // *then*プロセス中に`reject()`をコールした場合やエラーなどをキャッチした場合、次の*fail*プロセスにヘッドが移ります。
 // 間の*then*プロセスはスキップされ、*fail*から後の*then*プロセスも実行されるません。
@@ -234,13 +271,13 @@ The
     /* will be called */
   });
 
-// ### wait(delay)
+// ### wait(delay:Number)
 // **遅延**
-// 設定したミリ秒後に次の`then`プロセスにヘッドが移ります。
+// 設定したミリ秒後に次の*then*プロセスにヘッドが移ります。
 The
   .wait(1000)
   .then(function () {
-    console.log('1sec left');
+    console.log('1sec has been left');
   });
 // **then で return**
 // *then*プロセス中で`The.wait()`を`return`することで同じ効果を期待できます。
@@ -252,12 +289,13 @@ The
     }
   })
   .then(function () {
-    console.log('1sec left 50% of the time');
+    console.log('1sec has been left, 50% of the time');
   });
 
-// ### pomisify(function)
+// ### pomisify(async:Function)
+// async: Function
 // zazenをNodeで使うとき、`promisify()`というユーティリティが役に立ちます。
-// これは`function (err, result) {}`のようなcallbackを引数とする非同期なNodeのmethodをzazenのスタイルにwrapします。
+// これは`function (err, result) {}`のようなcallbackを引数とする非同期なNodeのメソッドをzazenスタイルにラップします。
 var promisify = zazen.promisify
   , readFile = promisify(require('fs').readFile)
   ;
@@ -283,7 +321,7 @@ The
   });
 
 
-// ## Copyright
+// ## Download
 
 // ### Distributions
 // | | development | production |
